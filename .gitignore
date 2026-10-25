@@ -17,3 +17,10 @@ contracts/**/test_snapshots/
 # deployer secrets (see ops/deployer/.gitignore)
 ops/deployer/.env
 ops/deployer/tmp/
+
+# Local planning notes (not published)
+Senda_Session_Summary_*.md
+CLAUDE_MASTER_PROMPT.md
+Senda_Claude_*
+ENV_TEMPLATE.env.example
+DEPLOYER_SECURITY_README.md
