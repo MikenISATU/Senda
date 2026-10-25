@@ -4,12 +4,6 @@ Send money. Share moments.
 
 Senda is a social wallet on Stellar. Sign in with your email, pay friends by username, tip creators, sell paid posts, and hire people with payments held safely until the work is approved. Platform fees are split to treasury wallets through Paiflow. Testnet preview with free test money.
 
-## Get started
-
-1. Read **START_HERE.md** (install, Supabase, Privy, Paiflow, first run).
-2. Copy `.env.example` to `.env.local` and fill it in (**docs/ENV_SETUP.md**).
-3. `pnpm install`, then `pnpm dev`, then open http://localhost:3000.
-
 ## Docs
 
 - **docs/PAIFLOW_SETUP.md**: the two fee-split flows
