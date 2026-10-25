@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #101B2D;
+  --color-ink-2: #1B2A44;
+  --color-cobalt: #4169F5;
+  --color-cobalt-deep: #2D4FD6; /* cobalt text on cloud backgrounds (AA) */
+  --color-cobalt-soft: #E7EDFF;
+  --color-cloud: #F5F7FC;
+  --color-mint: #24CBA8;
+  --color-mint-deep: #0B7A63; /* mint as text on light backgrounds (AA) */
+  --color-mint-soft: #DDF7F0;
+  --color-slate: #5B6B85;
+  --color-line: #DCE3F2;
+  --color-danger: #B42318;
+  --color-danger-soft: #FDECEA;
+  --color-warn: #8A5A00;
+  --color-warn-soft: #FFF4DB;
+
+  --font-display: "Space Grotesk Variable", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Manrope Variable", "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+  --radius-field: 0.75rem;
+  --radius-sheet: 1.25rem;
+}
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    @apply bg-cloud text-ink font-sans antialiased;
+    font-size: 15px;
+    line-height: 1.55;
+    overflow-x: hidden;
+  }
+  h1, h2, h3, h4 { @apply font-display; letter-spacing: -0.02em; line-height: 1.1; }
+  :focus-visible { outline: 3px solid var(--color-cobalt); outline-offset: 2px; border-radius: 6px; }
+  ::selection { background: var(--color-cobalt-soft); }
+}
+
+@utility tabular { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+@utility tap { min-height: 44px; min-width: 44px; }
+
+@utility btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+    min-height: 44px;
+}
+
+@utility btn-primary { @apply btn bg-cobalt text-white hover:bg-cobalt-deep; }
+  .btn-ink { @apply btn bg-ink text-white hover:bg-ink-2; }
+  .btn-ghost { @apply btn bg-transparent text-ink hover:bg-cobalt-soft; }
+  .btn-outline { @apply btn border border-line bg-white text-ink hover:border-cobalt; }
+  .btn-danger { @apply btn bg-danger text-white hover:opacity-90; }
+  .field {
+    @apply w-full rounded-[var(--radius-field)] border border-line bg-white px-3.5 text-ink placeholder:text-slate/80 focus:border-cobalt focus:outline-none focus:ring-2 focus:ring-cobalt/30;
+    min-height: 44px;
+}
+
+.label { @apply mb-1.5 block text-sm font-semibold text-ink; }
+.hint { @apply mt-1.5 text-sm text-slate; }
+.sheet { @apply rounded-[var(--radius-sheet)] bg-white ring-1 ring-line; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+/* Partner strip: loops left to right, pauses on hover. */
+@keyframes marquee-ltr { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+.marquee-track { animation: marquee-ltr 60s linear infinite; }
+.marquee:hover .marquee-track { animation-play-state: paused; }

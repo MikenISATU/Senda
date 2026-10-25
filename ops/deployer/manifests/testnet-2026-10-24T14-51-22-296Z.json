@@ -1,0 +1,104 @@
+{
+  "release": "senda-contracts-0.1.0",
+  "network": "testnet",
+  "networkPassphrase": "Test SDF Network ; September 2015",
+  "deployerPublicKey": "GCWPFDF44ISIKDKC6I4KCV6LP3BHHG55JWGEZJE4NTI4O6Q4ZPGF66SX",
+  "sourceCommit": "b38d6b8d9cd0ea8a5fe378621efe045498b7af98",
+  "deployedAt": "2026-10-24T14:51:22.296Z",
+  "tooling": "stellar-cli 28.1.0 (build) + @stellar/stellar-sdk 17.3.0 (upload/deploy)",
+  "assets": {
+    "XLM_SAC": "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+    "USDC_SAC": "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA",
+    "USDC_ISSUER": "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"
+  },
+  "contracts": {
+    "job_escrow": {
+      "contractId": "CAPHY7BPH7T374NWFHZSSYEU24URTGREWW7XNSPENKALSPUJFIFVDUUN",
+      "wasmSha256": "2f92b86eb76e212ccb426e29b9d13cf6ef36710900f73eae0e9925c12501b0e9",
+      "wasmHash": "2f92b86eb76e212ccb426e29b9d13cf6ef36710900f73eae0e9925c12501b0e9",
+      "uploadTx": "aa59a83c4555f1ae33437aa039fa7197510940293a5c2625419d47985eb00559",
+      "deployTx": "47070ae49c87b73b00c2c7d551a97e01e0a1f8e581cf47874565b8379246bb18",
+      "explorer": "https://stellar.expert/explorer/testnet/contract/CAPHY7BPH7T374NWFHZSSYEU24URTGREWW7XNSPENKALSPUJFIFVDUUN",
+      "constructor": {
+        "admin": "GCWPFDF44ISIKDKC6I4KCV6LP3BHHG55JWGEZJE4NTI4O6Q4ZPGF66SX",
+        "guardian": "GCWPFDF44ISIKDKC6I4KCV6LP3BHHG55JWGEZJE4NTI4O6Q4ZPGF66SX",
+        "mediator": "GCWPFDF44ISIKDKC6I4KCV6LP3BHHG55JWGEZJE4NTI4O6Q4ZPGF66SX",
+        "fee_collector": "GCWPFDF44ISIKDKC6I4KCV6LP3BHHG55JWGEZJE4NTI4O6Q4ZPGF66SX",
+        "fee_bps": 250,
+        "review_period": 604800,
+        "allowed_tokens": [
+          "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+          "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA"
+        ]
+      },
+      "permissions": "admin: config/upgrade (7-day timelock); guardian: pause new funding; mediator (snapshotted per job): split disputed escrow between parties only"
+    },
+    "usdc_earn_vault": {
+      "contractId": "CCHVH2MXKFSKC5WCWMGL3GGMPKA37UZTCJTUSLQMJDOKDFD6AOXURV67",
+      "wasmSha256": "ca177017c16eb990cb899b28618bb3bedcf9306fa14a93797aa8bc9ce2dab5f2",
+      "wasmHash": "ca177017c16eb990cb899b28618bb3bedcf9306fa14a93797aa8bc9ce2dab5f2",
+      "uploadTx": "571a358c05f25cf634514492c4d53d6666e29707dc207518150c1be7178e7e14",
+      "deployTx": "f3b3074784502955a79a9e703a7624f8ab9441f977b81b44f6abc74c5bbd2bcd",
+      "explorer": "https://stellar.expert/explorer/testnet/contract/CCHVH2MXKFSKC5WCWMGL3GGMPKA37UZTCJTUSLQMJDOKDFD6AOXURV67",
+      "audited": false,
+      "strategy": "CCEBVDYM32YNYCVNRXQKDFFPISJJCV557CDZEIRBEE4NCV4KHPQ44HGF",
+      "asset": "CAQCFVLOBK5GIULPNZRGATJJMIZL5BSP7X5YJVMGCPTUEPFM4AVSRCJU",
+      "deposit_cap_stroops": "10000000000"
+    }
+  },
+  "verification": {
+    "checkedAt": "2026-10-24",
+    "onchain": {
+      "escrow_config": {
+        "admin": "GCWPFDF44ISIKDKC6I4KCV6LP3BHHG55JWGEZJE4NTI4O6Q4ZPGF66SX",
+        "mediator": "GCWPFDF44ISIKDKC6I4KCV6LP3BHHG55JWGEZJE4NTI4O6Q4ZPGF66SX",
+        "fee_bps": 250,
+        "review_period": 604800,
+        "paused": false
+      },
+      "xlm_allowed": true,
+      "usdc_allowed": true,
+      "vault_config": {
+        "asset": "CAQCFVLOBK5GIULPNZRGATJJMIZL5BSP7X5YJVMGCPTUEPFM4AVSRCJU",
+        "strategy": "CCEBVDYM32YNYCVNRXQKDFFPISJJCV557CDZEIRBEE4NCV4KHPQ44HGF",
+        "cap": "10000000000",
+        "paused": false
+      },
+      "vault_total_assets": "0",
+      "job_escrow_wasm_matches_manifest": true,
+      "usdc_earn_vault_wasm_matches_manifest": true
+    },
+    "liveEscrowSmokeTest": {
+      "steps": [
+        {
+          "step": "fund 10 XLM",
+          "tx": "6510c740c9bac3a22ddbf8221aae8f29056705d7d1f6dc4fbe0375547c9b4058",
+          "maxFeeXLM": "5.0499"
+        },
+        {
+          "step": "submit_proof",
+          "tx": "7ef50de06e0653f0a7200652441bef1086f9d737ec8f18fb09e5e658753bb668",
+          "maxFeeXLM": "0.1290"
+        },
+        {
+          "step": "approve + payout",
+          "tx": "17978e26e5cbc4a3e9e5c0cf30cde68f20b90b801d5571d41335d6b9eb6d6cd2",
+          "maxFeeXLM": "0.0019"
+        }
+      ],
+      "jobIdMatchesServerDerivation": true,
+      "result": {
+        "status": 4,
+        "paid_freelancer": "97500000",
+        "paid_fee": "2500000",
+        "freelancer_balance_change_xlm": "9.6382730"
+      },
+      "note": "Test XLM only. status 4 = Paid; freelancer net 9.75 XLM, fee 0.25 XLM to fee_collector."
+    }
+  },
+  "notes": [
+    "Built with stellar-cli 28.1.0; uploaded/deployed with @stellar/stellar-sdk because the build sandbox proxy blocks the CLI RPC client.",
+    "Earn vault deployed and wired to Blend TestnetV2; no live deposit tested (needs Blend test USDC).",
+    "An earlier upload of a superseded escrow build (tx a5b0b444...) exists on testnet unused."
+  ]
+}

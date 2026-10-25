@@ -1,0 +1,9 @@
+# Never commit secrets or local deployer config.
+.env
+.env.*
+!.env.example
+*.key
+*.secret
+*.pem
+secrets/
+tmp/
