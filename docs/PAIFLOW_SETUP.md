@@ -17,9 +17,9 @@ Paiflow flows pay **fixed** recipients set when you deploy, so they can't send t
 
 | What happens in Senda | How it works | Paiflow? |
 |---|---|---|
-| Send money, request money in chat, receive | A direct payment the payer approves in their Senda wallet | No |
-| Tips and paid posts | One payment with two parts: the creator's share and the platform fee | No |
-| Job payments | Held in Senda's job escrow contract until approved, refunded or settled | No |
+| Send money, request money in a direct chat, receive | A direct payment the payer approves; the recipient receives the full amount and Senda takes no fee | No |
+| Tips and paid posts | One atomic payment with two parts: the creator's share and the platform fee | No |
+| Job payments | Held in Senda's job escrow contract; the freelancer receives the amount minus the platform fee only after an authorized payout | No |
 | **Platform fees** | Collected in the fee-collector wallet, then sent through Paiflow to your fixed treasury wallets | **Yes, 2 flows** |
 
 Before a user signs a Paiflow-prepared transaction, Senda checks it is exactly one `deposit(from, amount)` call from that user, on the right network. Events are pulled with the token, deduplicated by `eventId`, and only marked verified when Paiflow's transaction lookup reports `SUCCESS`.

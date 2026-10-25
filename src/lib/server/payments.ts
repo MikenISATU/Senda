@@ -10,14 +10,23 @@ import { asset } from "@/lib/stellar/network";
 import { buildPaymentTx } from "@/lib/stellar/tx";
 
 /**
- * Builds a person-to-person payment intent (SEND). Used by the wallet's Send
- * form and by "Pay" on a chat payment request. Paiflow flows have fixed
- * recipients, so these are plain Stellar payments signed by the payer.
+ * Builds a person-to-person payment intent (SEND or REQUEST). Used by the
+ * wallet's Send form and by "Pay" on a chat payment request. Paiflow flows
+ * have fixed recipients, so these are plain Stellar payments signed by the payer.
  */
 export async function preparePayment(
   c: Caller,
   from: string,
-  b: { to: string; asset: "XLM" | "USDC"; amount: string; memo?: string; idempotencyKey?: string; payload?: Record<string, unknown>; title?: string },
+  b: {
+    to: string;
+    asset: "XLM" | "USDC";
+    amount: string;
+    memo?: string;
+    idempotencyKey?: string;
+    payload?: Record<string, unknown>;
+    title?: string;
+    workflowKey?: "SEND" | "REQUEST";
+  },
 ): Promise<PreparedIntent> {
   const stroops = toStroops(b.amount);
   if (stroops <= 0n) throw bad("Amount must be greater than zero.");
@@ -35,7 +44,7 @@ export async function preparePayment(
   }
 
   const tx = await buildPaymentTx(from, [{ destination: r.address, asset: asset(b.asset), stroops, createIfMissing }], b.memo);
-  const run = await db().from("workflow_runs").insert({ workflow_key: "SEND", provider: "stellar", status: "prepared" }).select("id").single();
+  const run = await db().from("workflow_runs").insert({ workflow_key: b.workflowKey ?? "SEND", provider: "stellar", status: "prepared" }).select("id").single();
   const intent = await createIntent({
     caller: c,
     kind: "payment",

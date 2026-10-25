@@ -17,6 +17,9 @@ contracts/**/test_snapshots/
 # deployer secrets (see ops/deployer/.gitignore)
 ops/deployer/.env
 ops/deployer/tmp/
+# local Supabase credentials
+supabase/.secrets/
+supabase/DB password.txt
 
 # Local planning notes (not published)
 Senda_Session_Summary_*.md

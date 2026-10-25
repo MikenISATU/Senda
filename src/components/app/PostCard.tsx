@@ -36,18 +36,19 @@ export function PostCard({ post, onChange, onRemoved }: { post: Post; onChange?:
             <span className="text-sm text-slate">@{author?.username}</span>
             <Link href={`/p/${shown.id}`} className="text-sm text-slate hover:underline"><time dateTime={shown.created_at}>{timeAgo(shown.created_at)}</time></Link>
           </div>
+          {shown.status === "removed" && <p className="mt-1 text-sm font-semibold text-slate">Removed from the public feed · your purchased access remains available</p>}
           {shown.body && <p className="mt-1 whitespace-pre-wrap break-words">{shown.body}</p>}
 
           {shown.is_premium && (
             shown.unlocked ? (
-              shown.premiumBody ? <div className="mt-3 whitespace-pre-wrap rounded-xl bg-mint-soft p-3 text-ink"><p className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-mint-deep"><Lock size={14} aria-hidden /> Unlocked</p>{shown.premiumBody}</div> : null
+              shown.premiumBody ? <div className="mt-3 whitespace-pre-wrap rounded-xl bg-mint-soft p-3 text-ink"><p className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-mint-deep"><Lock size={14} aria-hidden /> {mine ? "Your premium content" : "Purchased · You own access"}</p>{shown.premiumBody}</div> : null
             ) : (
               <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-ink p-4 text-white">
                 <p className="flex items-center gap-2"><Lock size={16} aria-hidden /> Premium post</p>
                 {shown.product && (
                   <button className="btn bg-mint text-ink hover:opacity-90"
                     onClick={() => run(() => api<PreparedIntent>("/api/purchases/prepare", { body: { postId: shown.id } }), { onConfirmed: () => { setTimeout(() => onChange?.(), 400); } })}>
-                    Unlock for <Amount value={shown.product.price} asset={shown.product.asset} decimals={7} />
+                    Buy for <Amount value={shown.product.price} asset={shown.product.asset} decimals={7} />
                   </button>
                 )}
               </div>

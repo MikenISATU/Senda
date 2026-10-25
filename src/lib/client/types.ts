@@ -13,7 +13,7 @@ export type PreparedIntent = { intentId: string; hash: string; expiresAt: string
 export type IntentStatus = { intentId: string; kind: string; status: "prepared" | "submitted" | "confirmed" | "failed" | "expired"; hash: string; error: string | null; explorerUrl: string | null; summary: Summary };
 export type Media = { id: string; mime: string; url: string | null; locked: boolean };
 export type Post = {
-  id: string; author_id: string; body: string; repost_of: string | null; is_premium: boolean; like_count: number; comment_count: number;
+  id: string; author_id: string; body: string; repost_of: string | null; is_premium: boolean; status: "active" | "hidden" | "removed"; like_count: number; comment_count: number;
   repost_count: number; tip_total_usdc: string; created_at: string; author: PublicProfile | null; liked: boolean; media: Media[];
   product: { id: string; price: string; asset: "XLM" | "USDC" } | null; unlocked: boolean; premiumBody: string | null; original?: Post | null;
 };

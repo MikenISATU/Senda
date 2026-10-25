@@ -45,6 +45,7 @@ export const POST = route(async (req: NextRequest, { params }: Ctx) => {
       idempotencyKey: b.idempotencyKey,
       payload: { requestId: r.id, conversationId: r.conversation_id },
       title: `Pay @${username}'s request`,
+      workflowKey: "REQUEST",
     });
     // Claim the request for this intent only if nobody else claimed it meanwhile.
     let claim = db().from("payment_requests").update({ intent_id: intent.intentId }).eq("id", r.id).eq("status", "open");

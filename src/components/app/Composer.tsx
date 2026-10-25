@@ -80,7 +80,7 @@ export function Composer({ onPosted }: { onPosted: (p: Post) => void }) {
           <div>
             <label className="label" htmlFor="pbody">Unlocked content</label>
             <textarea id="pbody" className="field min-h-20 py-2.5" value={premiumBody} onChange={(e) => setPremiumBody(e.target.value)} placeholder="Only buyers see this" />
-            <p className="hint">The text above stays public as a teaser. Buyers unlock this and any premium files.</p>
+            <p className="hint">The text above stays public as a teaser. Buyers own access to this and any premium files.</p>
           </div>
         </div>
       )}

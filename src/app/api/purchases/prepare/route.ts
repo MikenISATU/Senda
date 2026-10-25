@@ -40,11 +40,11 @@ export const POST = route(async (req: NextRequest) => {
     caller: c, kind: "purchase", provider: "stellar", tx,
     payload: { productId: product.id, postId: b.postId },
     summary: {
-      title: `Unlock post for ${formatAmount(gross, 7)} ${product.asset}`,
+      title: `Buy premium post for ${formatAmount(gross, 7)} ${product.asset}`,
       lines: [
         { label: "Creator receives", value: `${formatAmount(net, 7)} ${product.asset}` },
         { label: "Platform fee", value: `${formatAmount(fee, 7)} ${product.asset}` },
-        { label: "Access", value: "Granted after on-chain confirmation" },
+        { label: "Ownership", value: "Access is yours after on-chain confirmation" },
       ],
     },
   });

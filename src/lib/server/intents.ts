@@ -98,6 +98,7 @@ export async function submitIntent(caller: Caller, intentId: string, signatureHe
   if (intent.status !== "prepared") return publicIntent(intent);
   if (new Date(intent.expires_at).getTime() < Date.now()) {
     await db().from("tx_intents").update({ status: "expired" }).eq("id", intent.id).eq("status", "prepared");
+    await db().from("workflow_runs").update({ status: "expired" }).eq("intent_id", intent.id);
     throw new HttpError(410, "This transaction expired before it was signed. Nothing was sent. Please try again.", "EXPIRED");
   }
   const signed = attachSignature(intent.xdr, intent.source_address, signatureHex);
@@ -112,6 +113,7 @@ export async function submitIntent(caller: Caller, intentId: string, signatureHe
       .select("id"),
   ) as { id: string }[];
   if (!claimed.length) return publicIntent(await loadIntent(intentId, caller.profile.id));
+  await db().from("workflow_runs").update({ status: "submitted", tx_hash: intent.tx_hash }).eq("intent_id", intent.id);
 
   let result: SubmitResult;
   try {

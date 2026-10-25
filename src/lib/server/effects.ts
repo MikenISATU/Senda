@@ -86,15 +86,17 @@ export async function onConfirmed(intent: IntentRow, result: SubmitResult) {
     default:
       break;
   }
-  if (p.workflowRunId) {
-    await db().from("workflow_runs").update({ status: "confirmed", tx_hash: hash }).eq("id", p.workflowRunId);
-  }
+  // intent_id is the common link for every tracked flow (send, request, tip,
+  // purchase, job escrow and Paiflow). Some older intents also carry a run id.
+  await db().from("workflow_runs").update({ status: "confirmed", tx_hash: hash }).eq("intent_id", intent.id);
+  if (p.workflowRunId) await db().from("workflow_runs").update({ status: "confirmed", tx_hash: hash }).eq("id", p.workflowRunId);
 }
 
 export async function onFailed(intent: IntentRow) {
   const p = intent.payload as Record<string, string>;
   if (intent.kind === "purchase") await db().from("purchases").update({ status: "failed" }).eq("intent_id", intent.id).eq("status", "pending");
   if (intent.kind === "tip") await db().from("tips").update({ status: "failed" }).eq("intent_id", intent.id).eq("status", "pending");
+  await db().from("workflow_runs").update({ status: "failed" }).eq("intent_id", intent.id);
   if (p.workflowRunId) await db().from("workflow_runs").update({ status: "failed" }).eq("id", p.workflowRunId);
 }
 

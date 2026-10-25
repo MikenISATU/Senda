@@ -12,8 +12,16 @@ export const GET = route(async (req: NextRequest) => {
   const feed = sp.get("feed") ?? "explore";
   const before = sp.get("before");
   const author = sp.get("author");
-  let q = db().from("posts").select("*").eq("status", "active").order("created_at", { ascending: false }).limit(20);
-  if (before) q = q.lt("created_at", before);
+  let q = db().from("posts").select("*");
+  if (feed === "owned") {
+    if (!viewer) return ok({ items: [], next: null });
+    const owned = must(await db().from("entitlements").select("product:products(post_id)").eq("profile_id", viewer.profile.id)) as unknown as { product: { post_id: string } | null }[];
+    const ids = owned.map((e) => e.product?.post_id).filter(Boolean) as string[];
+    if (!ids.length) return ok({ items: [], next: null });
+    q = q.in("id", ids).in("status", ["active", "removed"]);
+  } else {
+    q = q.eq("status", "active");
+  }
   if (author) q = q.eq("author_id", author);
   else if (feed === "following") {
     if (!viewer) return ok({ items: [], next: null });
@@ -21,6 +29,8 @@ export const GET = route(async (req: NextRequest) => {
     const ids = [viewer.profile.id, ...((f.data ?? []) as { followee_id: string }[]).map((x) => x.followee_id)];
     q = q.in("author_id", ids);
   } else if (feed === "premium") q = q.eq("is_premium", true);
+  q = q.order("created_at", { ascending: false }).limit(20);
+  if (before) q = q.lt("created_at", before);
   const rows = must(await q) as PostRow[];
   const items = await enrichPosts(rows, viewer?.profile.id ?? null);
   return ok({ items, next: rows.length === 20 ? rows[rows.length - 1].created_at : null });

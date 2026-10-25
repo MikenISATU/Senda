@@ -183,7 +183,7 @@ export function Chat({ id, onAttachmentsReady }: { id: string; onAttachmentsRead
           </div>
         )}
         <div className="flex gap-2">
-          {data.members.length === 2 && (
+          {data.conversation.kind === "dm" && data.members.length === 2 && (
             <button type="button" className="btn-outline px-3" aria-label="Request money" aria-expanded={asking} onClick={() => setAsking((v) => !v)}><HandCoins size={18} /></button>
           )}
           <label className="btn-outline cursor-pointer px-3" aria-label="Attach files"><Paperclip size={18} /><input type="file" multiple className="sr-only" onChange={(e) => { attach(e.target.files); e.target.value = ""; }} /></label>

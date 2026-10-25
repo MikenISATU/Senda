@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { PageHeader } from "@/components/app/AppShell";
 import { FaucetPanel } from "@/components/app/FaucetPanel";
+import { RecipientInput } from "@/components/app/RecipientInput";
 import { Amount, Empty, Notice, shortAddr, Spinner, timeAgo } from "@/components/ui/bits";
 import { useSession } from "@/lib/client/session";
 import type { PreparedIntent } from "@/lib/client/types";
@@ -76,7 +77,7 @@ export default function WalletPage() {
             e.preventDefault();
             run(() => api<PreparedIntent>("/api/payments/prepare", { body: { to, amount, asset, memo: memo || undefined, idempotencyKey: crypto.randomUUID() } }), { onConfirmed: () => { setAmount(""); setMemo(""); refresh(); } });
           }}>
-            <div><label className="label" htmlFor="to">To</label><input id="to" className="field" placeholder="@username or G... address" value={to} onChange={(e) => setTo(e.target.value.trim())} required autoComplete="off" /></div>
+            <div><label className="label" htmlFor="to">To</label><RecipientInput id="to" value={to} onChange={setTo} /></div>
             <div className="grid grid-cols-[1fr_auto] gap-2">
               <div><label className="label" htmlFor="amt">Amount</label><input id="amt" className="field tabular" inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} required /></div>
               <div><label className="label" htmlFor="as">Asset</label><select id="as" className="field" value={asset} onChange={(e) => setAsset(e.target.value as "XLM" | "USDC")}><option>USDC</option><option>XLM</option></select></div>

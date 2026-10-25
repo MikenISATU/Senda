@@ -36,8 +36,10 @@ describe("supabase migrations", () => {
     for (let i = 0; i < 3; i++) await db.query(`select confirm_purchase('00000000-0000-0000-0000-0000000000c1','hash')`);
     expect((await db.query<{ n: number }>("select count(*)::int n from entitlements")).rows[0].n).toBe(1);
     expect((await db.query<{ n: number }>("select count(*)::int n from notifications")).rows[0].n).toBe(1);
+    await db.exec(`update posts set status = 'removed' where id = '00000000-0000-0000-0000-0000000000a1'`);
 
-    // RLS: buyer can read premium body; stranger cannot; nobody reads private identity; no client writes.
+    // RLS: a buyer keeps purchased content after creator removal; a stranger
+    // cannot read it; nobody reads private identity; no client writes.
     await db.exec(`set role authenticated; select set_config('request.jwt.claims', '{"sub":"${B}"}', false);`);
     expect((await db.query<{ n: number }>("select count(*)::int n from post_premium_content")).rows[0].n).toBe(1);
     expect((await db.query<{ n: number }>("select count(*)::int n from profile_private")).rows[0].n).toBe(0);
@@ -57,6 +59,13 @@ describe("supabase migrations", () => {
     await expect(db.exec(`insert into payment_requests (conversation_id, requester_id, payer_id, asset, amount) values ('00000000-0000-0000-0000-0000000000e1','${A}','${B}','USDC',0)`)).rejects.toThrow();
     await db.exec(`set role authenticated; select set_config('request.jwt.claims', '{"sub":"${B}"}', false);`);
     await expect(db.query("select * from payment_requests")).rejects.toThrow(/permission denied/);
+  });
+
+  it("tracks message request payments as their own workflow", async () => {
+    const db = await freshDb();
+    await db.exec(`insert into workflow_runs (workflow_key, provider, status) values ('REQUEST', 'stellar', 'prepared')`);
+    expect((await db.query<{ workflow_key: string }>("select workflow_key from workflow_runs")).rows[0].workflow_key).toBe("REQUEST");
+    await expect(db.exec(`insert into workflow_runs (workflow_key, provider) values ('UNKNOWN', 'stellar')`)).rejects.toThrow();
   });
 
   it("tips confirm once and rate limiter counts per window", async () => {
