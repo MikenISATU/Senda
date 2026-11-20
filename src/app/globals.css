@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #101B2D;
+  --color-ink-2: #1B2A44;
+  --color-cobalt: #4169F5;
+  --color-cobalt-deep: #2D4FD6; /* cobalt text on cloud backgrounds (AA) */
+  --color-cobalt-soft: #E7EDFF;
+  --color-cloud: #F5F7FC;
+  --color-mint: #24CBA8;
+  --color-mint-deep: #0B7A63; /* mint as text on light backgrounds (AA) */
+  --color-mint-soft: #DDF7F0;
+  --color-slate: #5B6B85;
+  --color-line: #DCE3F2;
+  --color-danger: #B42318;
+  --color-danger-soft: #FDECEA;
+  --color-warn: #8A5A00;
+  --color-warn-soft: #FFF4DB;
+  /* Fixed colours that do not flip inside the dark app theme. */
+  --color-snow: #FFFFFF;
+  --color-night: #0A1120;
+
+  --font-display: "Space Grotesk Variable", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Manrope Variable", "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+  --radius-field: 0.75rem;
+  --radius-sheet: 1.25rem;
+}
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    @apply bg-cloud text-ink font-sans antialiased;
+    font-size: 15px;
+    line-height: 1.55;
+    overflow-x: hidden;
+  }
+  h1, h2, h3, h4 { @apply font-display; letter-spacing: -0.02em; line-height: 1.1; }
+  :focus-visible { outline: 3px solid var(--color-cobalt); outline-offset: 2px; border-radius: 6px; }
+  ::selection { background: var(--color-cobalt-soft); }
+}
+
+@utility tabular { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+@utility tap { min-height: 44px; min-width: 44px; }
+
+@utility btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+    min-height: 44px;
+}
+
+@utility btn-primary { @apply btn bg-cobalt text-white hover:bg-cobalt-deep; }
+  .btn-ink { @apply btn bg-ink text-white hover:bg-ink-2; }
+  .btn-ghost { @apply btn bg-transparent text-ink hover:bg-cobalt-soft; }
+  .btn-outline { @apply btn border border-line bg-white text-ink hover:border-cobalt; }
+  .btn-danger { @apply btn bg-danger text-white hover:opacity-90; }
+  .field {
+    @apply w-full rounded-[var(--radius-field)] border border-line bg-white px-3.5 text-ink placeholder:text-slate/80 focus:border-cobalt focus:outline-none focus:ring-2 focus:ring-cobalt/30;
+    min-height: 44px;
+}
+
+.label { @apply mb-1.5 block text-sm font-semibold text-ink; }
+.hint { @apply mt-1.5 text-sm text-slate; }
+.sheet { @apply rounded-[var(--radius-sheet)] bg-white ring-1 ring-line; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+/* ───────────── App themes (signed-in screens) ─────────────
+   Light is the default token set above. Dark re-points the same tokens the
+   components already use, so "bg-white" is a card and "text-ink" is the main
+   text in both. The <html data-theme> attribute is set before first paint
+   (see lib/client/theme.ts) and by the switch in the header and Settings. */
+.senda-app {
+  min-height: 100dvh;
+  color: var(--color-ink);
+  background-color: var(--color-cloud);
+  background-image:
+    radial-gradient(56rem 30rem at 88% -8%, rgba(65, 105, 245, 0.10), transparent 62%),
+    radial-gradient(48rem 28rem at -8% 108%, rgba(36, 203, 168, 0.10), transparent 60%);
+  background-attachment: fixed;
+  color-scheme: light;
+}
+html[data-theme="dark"] .senda-app {
+  --color-cloud: #0A1120;
+  --color-white: #131D32;
+  --color-ink: #F1F4FA;
+  --color-ink-2: #DCE3F2;
+  --color-slate: #97A5C0;
+  --color-line: #24335A;
+  --color-cobalt-soft: #1A2850;
+  --color-cobalt-deep: #9DB2FF;
+  --color-mint-soft: #0F2E2B;
+  --color-mint-deep: #5CE0C4;
+  --color-danger: #FF8E80;
+  --color-danger-soft: #3A1614;
+  --color-warn: #FFCB6B;
+  --color-warn-soft: #3A2C0A;
+  color-scheme: dark;
+  background-image:
+    radial-gradient(56rem 30rem at 88% -8%, rgba(65, 105, 245, 0.22), transparent 62%),
+    radial-gradient(48rem 28rem at -8% 108%, rgba(36, 203, 168, 0.14), transparent 60%);
+}
+html[data-theme="dark"]:has(.senda-app) body { background: #0A1120; }
+html[data-theme="dark"] .senda-app ::selection { background: #2D4FD6; color: #fff; }
+
+/* Senda's signature blue-to-mint gradient: buttons, story rings, own chat bubbles. */
+.grad { background-image: linear-gradient(135deg, #6C8CFF 0%, #24CBA8 100%); color: var(--color-night); }
+.senda-app .btn-primary { background-image: linear-gradient(135deg, #6C8CFF 0%, #24CBA8 100%); color: var(--color-night); }
+.senda-app .btn-primary:hover { filter: brightness(1.08); }
+.ring-grad { padding: 2.5px; border-radius: 9999px; background-image: linear-gradient(135deg, #6C8CFF 0%, #24CBA8 100%); }
+.ring-quiet { padding: 2.5px; border-radius: 9999px; background: var(--color-line); }
+.hero-card { background-image: linear-gradient(135deg, #2A46B8 0%, #17307A 45%, #0E5E57 100%); color: var(--color-snow); }
+.icon-btn { @apply inline-flex size-11 items-center justify-center rounded-2xl bg-white text-ink ring-1 ring-line transition-colors hover:ring-cobalt; }
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.link { @apply font-semibold text-cobalt-deep underline-offset-2 hover:underline; }
+
+/* Partner strip: loops left to right, pauses on hover. */
+@keyframes marquee-ltr { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+.marquee-track { animation: marquee-ltr 60s linear infinite; }
+.marquee:hover .marquee-track { animation-play-state: paused; }

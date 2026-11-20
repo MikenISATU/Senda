@@ -1,0 +1,96 @@
+{
+  "release": "senda-contracts-0.2.0",
+  "network": "testnet",
+  "networkPassphrase": "Test SDF Network ; September 2015",
+  "deployerPublicKey": "GCWPFDF44ISIKDKC6I4KCV6LP3BHHG55JWGEZJE4NTI4O6Q4ZPGF66SX",
+  "sourceCommit": "dcf2c2954237cb8f9fa36058ee994090b5a6cf6d",
+  "deployedAt": "2026-11-14T05:15:32.451Z",
+  "tooling": "stellar-cli 28.1.0 (build) + @stellar/stellar-sdk (upload/deploy)",
+  "assets": {
+    "XLM_SAC": "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+    "USDC_SAC": "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA",
+    "USDC_ISSUER": "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"
+  },
+  "wallets": {
+    "deployer": "GCWPFDF44ISIKDKC6I4KCV6LP3BHHG55JWGEZJE4NTI4O6Q4ZPGF66SX",
+    "treasury": "GAJFQEBCRMK6REOVYEJRJKFFX3E5AONAO4M5HPL3SVPVQ7HLG5FYYNCO",
+    "community": "GAASQI4VUVKFQTV3Y2T7FX6LSRL4OXKKDLWKALJXPRUTTXVPFB2XLRF5"
+  },
+  "contracts": {
+    "fee_splitter": {
+      "contractId": "CAYT5ITMELZZRGSI3VXCLZYM4XUYLCVRGBIWNJN4POQFJXBCUMA4PG3J",
+      "wasmSha256": "a68c0b5ee4da18ed467a2e83565df2c5b231d06103409f9418225d8040a65b5d",
+      "wasmHash": "a68c0b5ee4da18ed467a2e83565df2c5b231d06103409f9418225d8040a65b5d",
+      "uploadTx": "2788c098801f0d4f1ed73bef36890d92da9292cb860750510c3d15230934f21d",
+      "deployTx": "175a90c69a595f9658802f73439d5022a862f0d95f5abd3275f1f55cc6aa2d16",
+      "explorer": "https://stellar.expert/explorer/testnet/contract/CAYT5ITMELZZRGSI3VXCLZYM4XUYLCVRGBIWNJN4POQFJXBCUMA4PG3J",
+      "constructor": {
+        "admin": "GCWPFDF44ISIKDKC6I4KCV6LP3BHHG55JWGEZJE4NTI4O6Q4ZPGF66SX",
+        "send_fee_bps": 50,
+        "platform_fee_bps": 250,
+        "shares": [
+          {
+            "to": "GAJFQEBCRMK6REOVYEJRJKFFX3E5AONAO4M5HPL3SVPVQ7HLG5FYYNCO",
+            "bps": 8000
+          },
+          {
+            "to": "GAASQI4VUVKFQTV3Y2T7FX6LSRL4OXKKDLWKALJXPRUTTXVPFB2XLRF5",
+            "bps": 2000
+          }
+        ],
+        "allowed_tokens": [
+          "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+          "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA"
+        ]
+      },
+      "onChainConfig": {
+        "cfg": {
+          "admin": "GCWPFDF44ISIKDKC6I4KCV6LP3BHHG55JWGEZJE4NTI4O6Q4ZPGF66SX",
+          "paused": false,
+          "platform_fee_bps": 250,
+          "send_fee_bps": 50
+        },
+        "shares": [
+          {
+            "bps": 8000,
+            "to": "GAJFQEBCRMK6REOVYEJRJKFFX3E5AONAO4M5HPL3SVPVQ7HLG5FYYNCO"
+          },
+          {
+            "bps": 2000,
+            "to": "GAASQI4VUVKFQTV3Y2T7FX6LSRL4OXKKDLWKALJXPRUTTXVPFB2XLRF5"
+          }
+        ]
+      },
+      "permissions": "admin: fee rates (max 10%), fee recipients, token list, pause pay, upgrade after a 7-day timelock. No function can move a payer's or recipient's funds. distribute is open to anyone."
+    },
+    "job_escrow": {
+      "contractId": "CAPHY7BPH7T374NWFHZSSYEU24URTGREWW7XNSPENKALSPUJFIFVDUUN",
+      "note": "deployed 2026-10-24 (see testnet-2026-10-24 manifest); fee_collector changed to fee_splitter",
+      "setRolesTx": "4fabc0b53358061033d8288f139f4b8a00162d186242fd16f0f3045f7ff247a0",
+      "feeCollectorBefore": "GCWPFDF44ISIKDKC6I4KCV6LP3BHHG55JWGEZJE4NTI4O6Q4ZPGF66SX",
+      "feeCollectorAfter": "CAYT5ITMELZZRGSI3VXCLZYM4XUYLCVRGBIWNJN4POQFJXBCUMA4PG3J"
+    }
+  },
+  "liveChecks": {
+    "tip10Xlm": {
+      "tx": "cf5339896d6eeff49eb3b670fc38dace39b2446964fe1e0ae6b4250688ff79d5",
+      "resourceFeeXlm": 0.0032388,
+      "creatorGot": "9.7500000",
+      "treasuryGot": "0.2000000",
+      "communityGot": "0.0500000",
+      "feeReturned": "2500000"
+    },
+    "send010Usdc": {
+      "tx": "06594311f06459b07cd53292ee06c429530565fb506c073bb723f49bfbc43327",
+      "resourceFeeXlm": 0.0030938,
+      "recipientAndCommunityShareGot": "0.0996000",
+      "treasuryGot": "0.0004000"
+    },
+    "distribute1Xlm": {
+      "tx": "6d049b23d01647c2d660e5552604b1da5decc4c7e4335eaf6b211684582d52c9",
+      "calledBy": "GAJYFXYFIMIVAFR6BDK4HEF44KLL7WQRVWLUSUCJKDHR5SAXJUCWX4A5",
+      "treasuryGot": "0.8000000",
+      "communityGot": "0.2000000"
+    }
+  }
+}

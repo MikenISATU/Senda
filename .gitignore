@@ -1,0 +1,30 @@
+node_modules/
+.next/
+out/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+next-env.d.ts
+.vercel
+# env files: only the example is committed
+.env
+.env.*
+!.env.example
+# contracts
+contracts/target/
+contracts/**/test_snapshots/
+# secrets: never commit these, anywhere in the project
+.secrets/
+**/.secrets/
+*.secret
+*.key
+*password*.txt
+# deployer secrets (see ops/deployer/.gitignore)
+ops/deployer/.env
+ops/deployer/tmp/
+
+# Local notes (not published)
+Senda_Session_Summary_*.md
+AGENTS.md
+CLAUDE.md
