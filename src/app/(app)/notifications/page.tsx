@@ -1,10 +1,11 @@
 "use client";
 
+import { ListSkeleton } from "@/components/ui/Loading";
 import Link from "next/link";
 import { useEffect } from "react";
 import useSWR from "swr";
 import { PageHeader } from "@/components/app/AppShell";
-import { Avatar, Empty, Spinner, timeAgo } from "@/components/ui/bits";
+import { Avatar, Empty, timeAgo } from "@/components/ui/bits";
 import { useSession } from "@/lib/client/session";
 import type { PublicProfile } from "@/lib/client/types";
 
@@ -26,7 +27,7 @@ export default function NotificationsPage() {
   return (
     <div className="mx-auto w-full max-w-[780px]">
       <PageHeader title="Notifications" />
-      {!data ? <div className="p-6"><Spinner /></div> : data.length === 0 ? <Empty title="No notifications yet">Likes, tips, payments, messages and job updates show up here.</Empty> : (
+      {!data ? <ListSkeleton label="Loading notifications" /> : data.length === 0 ? <Empty title="No notifications yet">Likes, tips, payments, messages and job updates show up here.</Empty> : (
         <ul>
           {data.map((n) => (
             <li key={n.id}>

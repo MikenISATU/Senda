@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaucetPanel } from "@/components/app/FaucetPanel";
 import { Logo } from "@/components/app/AppShell";
-import { Notice, shortAddr, Spinner } from "@/components/ui/bits";
+import { Notice, shortAddr } from "@/components/ui/bits";
+import { Splash } from "@/components/ui/Loading";
 import { useSession } from "@/lib/client/session";
 
 export default function Onboarding() {
@@ -20,7 +21,7 @@ export default function Onboarding() {
     if (s.status === "signed-out") router.replace("/login");
   }, [s.status, router]);
 
-  if (s.status !== "ready") return <main className="grid min-h-dvh place-items-center"><Spinner label={s.status === "provisioning" ? "Creating your Stellar wallet" : "Loading"} />{s.error && <Notice tone="danger">{s.error}</Notice>}</main>;
+  if (s.status !== "ready") return s.error ? <main className="grid min-h-dvh place-items-center px-6"><Notice tone="danger">{s.error}</Notice></main> : <Splash label={s.status === "provisioning" ? "Setting up your wallet" : "Loading"} />;
 
   async function save(e: React.FormEvent) {
     e.preventDefault();

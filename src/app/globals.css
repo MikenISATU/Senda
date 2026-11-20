@@ -120,3 +120,37 @@ html[data-theme="dark"] .senda-app ::selection { background: #2D4FD6; color: #ff
 @keyframes marquee-ltr { from { transform: translateX(-50%); } to { transform: translateX(0); } }
 .marquee-track { animation: marquee-ltr 60s linear infinite; }
 .marquee:hover .marquee-track { animation-play-state: paused; }
+
+/* ───────────── Loading states ─────────────
+   Skeletons stand in for content while it loads, so the page keeps its shape
+   instead of jumping. Colours come from the theme tokens, so they work in
+   light and dark. Motion stops for people who ask for reduced motion. */
+.skeleton {
+  display: block;
+  border-radius: 0.75rem;
+  background-color: var(--color-line);
+  background-image: linear-gradient(100deg, transparent 20%, color-mix(in srgb, var(--color-white) 55%, transparent) 50%, transparent 80%);
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: senda-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes senda-shimmer { from { background-position: 160% 0; } to { background-position: -60% 0; } }
+
+.splash-ring { animation: senda-spin 1.1s linear infinite; transform-origin: center; }
+.splash-mark { animation: senda-breathe 1.8s ease-in-out infinite; }
+@keyframes senda-spin { to { transform: rotate(360deg); } }
+@keyframes senda-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.94); } }
+
+.route-progress {
+  position: fixed; inset: 0 0 auto 0; z-index: 100; height: 3px; pointer-events: none;
+  background: linear-gradient(90deg, #4169F5, #24CBA8);
+  transform-origin: left; transform: scaleX(0); opacity: 0;
+  transition: transform 0.25s ease-out, opacity 0.3s ease 0.15s;
+}
+.route-progress[data-state="loading"] { opacity: 1; transform: scaleX(0.8); transition: transform 8s cubic-bezier(0.1, 0.7, 0.2, 1), opacity 0.1s; }
+.route-progress[data-state="done"] { opacity: 0; transform: scaleX(1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton, .splash-ring, .splash-mark { animation: none; }
+  .route-progress { transition: none; }
+}

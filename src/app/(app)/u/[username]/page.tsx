@@ -1,12 +1,13 @@
 "use client";
 
+import { PageSkeleton } from "@/components/ui/Loading";
 import { Copy, MessageCircle } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import useSWR from "swr";
 import { Empty, Feed } from "@/components/app/Feed";
 import { TipModal } from "@/components/app/TipModal";
-import { Avatar, Notice, shortAddr, Spinner } from "@/components/ui/bits";
+import { Avatar, Notice, shortAddr } from "@/components/ui/bits";
 import { useSession } from "@/lib/client/session";
 import type { PublicProfile } from "@/lib/client/types";
 
@@ -19,7 +20,7 @@ export default function ProfilePage() {
   const { data, error, mutate } = useSWR(`/api/users/${username}`, (u: string) => api<R>(u));
   const [tip, setTip] = useState(false);
   if (error) return <div className="p-6"><Notice tone="danger">{(error as Error).message}</Notice></div>;
-  if (!data) return <div className="p-6"><Spinner /></div>;
+  if (!data) return <PageSkeleton label="Loading profile" />;
   const p = data.profile;
   return (
     <div className="mx-auto w-full max-w-[780px]">

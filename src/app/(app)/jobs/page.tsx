@@ -1,10 +1,11 @@
 "use client";
 
+import { ListSkeleton } from "@/components/ui/Loading";
 import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
 import { PageHeader } from "@/components/app/AppShell";
-import { Amount, Avatar, Empty, Spinner, timeAgo } from "@/components/ui/bits";
+import { Amount, Avatar, Empty, timeAgo } from "@/components/ui/bits";
 import { STATUS_LABEL } from "@/lib/client/jobs";
 import { useSession } from "@/lib/client/session";
 import type { PublicProfile } from "@/lib/client/types";
@@ -22,7 +23,7 @@ export default function JobsPage() {
       <div role="tablist" className="flex gap-1 px-4 md:px-6">
         {(["open", "mine"] as const).map((t) => <button key={t} role="tab" aria-selected={scope === t} onClick={() => setScope(t)} className={`tap rounded-full px-4 text-sm font-semibold ${scope === t ? "bg-ink text-white" : "text-slate hover:bg-white"}`}>{t === "open" ? "Open jobs" : "My jobs"}</button>)}
       </div>
-      {!data ? <div className="p-6"><Spinner /></div> : data.length === 0 ? (
+      {!data ? <ListSkeleton rows={4} label="Loading jobs" /> : data.length === 0 ? (
         <Empty title={scope === "open" ? "No open jobs right now" : "You have no jobs yet"} action={<Link href="/jobs/new" className="btn-primary">Post a job</Link>}>Post work, pick someone, and lock the payment before they start. It is released when you approve.</Empty>
       ) : (
         <ul className="mt-3">

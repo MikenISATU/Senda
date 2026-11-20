@@ -1,7 +1,8 @@
 "use client";
 
 import useSWRInfinite from "swr/infinite";
-import { Empty, Notice, Spinner } from "@/components/ui/bits";
+import { Empty, Notice } from "@/components/ui/bits";
+import { FeedSkeleton } from "@/components/ui/Loading";
 import { useSession } from "@/lib/client/session";
 import type { Post } from "@/lib/client/types";
 import { PostCard } from "./PostCard";
@@ -20,7 +21,7 @@ export function Feed({ query, empty, prepend }: { query: string; empty: React.Re
     <>
       {prepend?.(() => mutate())}
       {error && <div className="p-4"><Notice tone="danger">{(error as Error).message}</Notice></div>}
-      {!data && !error && <div className="p-6"><Spinner label="Loading posts" /></div>}
+      {!data && !error && <FeedSkeleton />}
       {data && items.length === 0 && empty}
       <div aria-live="polite">
         {items.map((p) => <PostCard key={p.id} post={p} onChange={() => mutate()} onRemoved={() => mutate()} />)}

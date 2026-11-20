@@ -1,9 +1,10 @@
 "use client";
 
+import { ListSkeleton } from "@/components/ui/Loading";
 import { useState } from "react";
 import useSWR from "swr";
 import { PageHeader } from "@/components/app/AppShell";
-import { Amount, Notice, Spinner } from "@/components/ui/bits";
+import { Amount, Notice } from "@/components/ui/bits";
 import { useSession } from "@/lib/client/session";
 import type { PreparedIntent } from "@/lib/client/types";
 import { useTx } from "@/lib/client/useTx";
@@ -39,7 +40,7 @@ export default function EarnPage() {
         {data?.config.mode === "vault" ? " Deposits go through the Senda Earn vault contract, which holds pool shares for everyone and lets only you withdraw yours." : " You lend straight from your own wallet; Senda never holds these funds."}
       </p>
 
-      {!data ? <div className="mt-6"><Spinner /></div> : (
+      {!data ? <div className="mt-6"><ListSkeleton rows={3} /></div> : (
         <>
           <div className="mt-5 space-y-3">
             {!data.config.enabled && <Notice tone="info">{data.config.reason}</Notice>}

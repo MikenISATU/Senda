@@ -5,7 +5,8 @@ import useSWR from "swr";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Amount, Avatar, Notice, Spinner } from "@/components/ui/bits";
+import { Amount, Avatar, Notice } from "@/components/ui/bits";
+import { Skeleton, Splash } from "@/components/ui/Loading";
 import { useSession } from "@/lib/client/session";
 import { Logo } from "@/components/Logo";
 import { PeopleSearch } from "./PeopleSearch";
@@ -44,9 +45,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
   if (s.status !== "ready" || !s.profile?.username) {
     return (
-      <main className="grid min-h-dvh place-items-center">
-        <Spinner label={s.status === "provisioning" ? "Setting up your wallet" : "Loading"} />
-      </main>
+      <Splash label={s.status === "provisioning" ? "Setting up your wallet" : "Opening Senda"} />
     );
   }
   const active = (href: string) => path === href || (href !== "/home" && path.startsWith(href));
@@ -141,7 +140,7 @@ function RightRail() {
         <div aria-hidden className="absolute -right-10 -top-14 size-44 rounded-full bg-snow/10 blur-2xl" />
         <div className="relative">
           <p className="text-sm text-snow/70">Balance</p>
-          {!w.data ? <p className="mt-3 text-sm text-snow/70">Loading</p> : (
+          {!w.data ? <span role="status" className="mt-2 block space-y-2"><span className="sr-only">Loading your balance</span><Skeleton className="h-10 w-40 opacity-40" /><Skeleton className="h-4 w-24 opacity-40" /></span> : (
             <>
               <p className="mt-1 font-display text-[2.6rem] font-bold leading-none tracking-tight"><span className="text-snow/60">$</span><Amount value={b?.usdc ?? "0"} decimals={2} /></p>
               <p className="mt-2 text-sm text-snow/70"><Amount value={b?.xlm ?? "0"} decimals={2} /> XLM</p>

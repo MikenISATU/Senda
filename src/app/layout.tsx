@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/space-grotesk";
 import "@fontsource-variable/manrope";
 import "./globals.css";
+import { RouteProgress } from "@/components/ui/RouteProgress";
 import { THEME_INIT_SCRIPT } from "@/lib/client/theme";
 
 export const metadata: Metadata = {
@@ -17,7 +18,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
-      <body>{children}</body>
+      <body>
+        <RouteProgress />
+        {children}
+      </body>
     </html>
   );
 }

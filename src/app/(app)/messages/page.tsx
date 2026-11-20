@@ -1,9 +1,10 @@
 "use client";
 
+import { ListSkeleton } from "@/components/ui/Loading";
 import Link from "next/link";
 import useSWR from "swr";
 import { PeopleRow } from "@/components/app/PeopleRow";
-import { Avatar, Empty, Spinner, timeAgo } from "@/components/ui/bits";
+import { Avatar, Empty, timeAgo } from "@/components/ui/bits";
 import { useSession } from "@/lib/client/session";
 import type { PublicProfile } from "@/lib/client/types";
 
@@ -16,7 +17,7 @@ export default function Messages() {
     <div className="mx-auto w-full max-w-[720px]">
       <h1 className="px-4 pb-3 pt-2 text-3xl font-semibold tracking-tight md:px-6">Chats</h1>
       <PeopleRow />
-      {!data ? <div className="p-6"><Spinner /></div> : data.length === 0 ? (
+      {!data ? <ListSkeleton label="Loading chats" /> : data.length === 0 ? (
         <Empty title="No chats yet" action={<Link href="/explore" className="btn-primary">Find someone</Link>}>Open a profile and tap Message.</Empty>
       ) : (
         <ul className="mx-4 overflow-hidden rounded-[1.75rem] bg-white ring-1 ring-line md:mx-6">

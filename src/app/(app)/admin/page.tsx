@@ -1,9 +1,10 @@
 "use client";
 
+import { PageSkeleton } from "@/components/ui/Loading";
 import Link from "next/link";
 import useSWR from "swr";
 import { PageHeader } from "@/components/app/AppShell";
-import { Amount, Empty, Notice, Spinner, timeAgo } from "@/components/ui/bits";
+import { Amount, Empty, Notice, timeAgo } from "@/components/ui/bits";
 import { useSession } from "@/lib/client/session";
 import type { PreparedIntent } from "@/lib/client/types";
 import { useTx } from "@/lib/client/useTx";
@@ -22,7 +23,7 @@ export default function AdminPage() {
   const { run } = useTx();
   const o = useSWR("/api/admin/overview", (u: string) => api<O>(u));
   if (o.error) return <div className="p-6"><Notice tone="danger">{(o.error as Error).message}</Notice></div>;
-  if (!o.data) return <div className="p-6"><Spinner /></div>;
+  if (!o.data) return <PageSkeleton />;
   const d = o.data;
   return (
     <div className="mx-auto max-w-4xl space-y-4 px-4 pb-10 md:px-6">

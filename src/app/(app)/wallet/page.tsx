@@ -4,10 +4,12 @@ import { ArrowDownLeft, ArrowUpRight, Copy, ExternalLink } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
+import useSWRInfinite from "swr/infinite";
 import { PageHeader } from "@/components/app/AppShell";
 import { FaucetPanel } from "@/components/app/FaucetPanel";
 import { RecipientInput } from "@/components/app/RecipientInput";
-import { Amount, Empty, Notice, shortAddr, Spinner, timeAgo } from "@/components/ui/bits";
+import { Amount, Empty, Notice, shortAddr, timeAgo } from "@/components/ui/bits";
+import { ListSkeleton, Skeleton } from "@/components/ui/Loading";
 import { useSession } from "@/lib/client/session";
 import type { PreparedIntent } from "@/lib/client/types";
 import { useTx } from "@/lib/client/useTx";
@@ -15,11 +17,29 @@ import { useTx } from "@/lib/client/useTx";
 type W = { address: string; balances: { exists: boolean; xlm: string; usdc: string | null; xlmAvailable: string }; network: string; explorer: string };
 type H = { items: { id: string; txHash: string; createdAt: string; direction: "in" | "out"; asset: string; amount: string; counterparty: string | null; counterpartyUsername: string | null; explorerUrl: string; type: string }[]; next: string | null };
 
+/** How many activity rows show at first, and how many each "Show more" adds. */
+const ACTIVITY_FIRST = 5;
+const ACTIVITY_STEP = 10;
+
 export default function WalletPage() {
   const { api, config } = useSession();
   const { run } = useTx();
   const w = useSWR("/api/wallet", (u: string) => api<W>(u), { refreshInterval: 30_000 });
-  const h = useSWR("/api/wallet/history", (u: string) => api<H>(u), { refreshInterval: 30_000 });
+  // Activity loads a page at a time and shows a few rows, so a busy wallet never becomes a very long page.
+  const h = useSWRInfinite<H>(
+    (i, prev: H | null) => (i === 0 ? "/api/wallet/history" : prev?.next ? `/api/wallet/history?cursor=${encodeURIComponent(prev.next)}` : null),
+    (u: string) => api<H>(u),
+    { refreshInterval: 30_000, revalidateFirstPage: true },
+  );
+  const [shown, setShown] = useState(ACTIVITY_FIRST);
+  const activity = h.data?.flatMap((p) => p.items) ?? [];
+  const moreOnServer = !!h.data?.[h.data.length - 1]?.next;
+  const canShowMore = shown < activity.length || moreOnServer;
+  function showMore() {
+    const next = shown + ACTIVITY_STEP;
+    if (next > activity.length && moreOnServer) h.setSize(h.size + 1);
+    setShown(next);
+  }
   const [tab, setTab] = useState<"send" | "receive">("send");
   const [to, setTo] = useState("");
   const [amount, setAmount] = useState("");
@@ -42,7 +62,7 @@ export default function WalletPage() {
       <section aria-label="Balances" className="hero-card relative overflow-hidden rounded-[1.75rem] p-6 md:p-8">
         <div aria-hidden className="pointer-events-none absolute -right-16 -top-20 size-64 rounded-full bg-snow/10 blur-3xl" />
         <div className="relative">
-        {!b ? <p className="text-sm text-snow/70">Loading your balance</p> : (
+        {!b ? <div role="status" className="grid gap-5 sm:grid-cols-2"><span className="sr-only">Loading your balance</span><div className="space-y-2"><Skeleton className="h-4 w-28 opacity-40" /><Skeleton className="h-10 w-40 opacity-40" /></div><div className="space-y-2"><Skeleton className="h-4 w-16 opacity-40" /><Skeleton className="h-10 w-40 opacity-40" /></div></div> : (
           <>
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
@@ -105,24 +125,35 @@ export default function WalletPage() {
       )}
 
       <section className="mt-6" aria-labelledby="hist-h">
-        <h2 id="hist-h" className="mb-2 text-lg font-semibold">Activity</h2>
-        {!h.data ? <Spinner /> : h.data.items.length === 0 ? <Empty title="Nothing yet">Money you send or receive shows up here.</Empty> : (
-          <ul className="sheet divide-y divide-line overflow-hidden rounded-3xl">
-            {h.data.items.map((i) => (
-              <li key={i.id}>
-                <a href={i.explorerUrl} target="_blank" rel="noreferrer" className="flex items-center gap-3 px-4 py-3 hover:bg-cloud">
-                  <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${i.direction === "in" ? "bg-mint-soft text-mint-deep" : "bg-cobalt-soft text-cobalt-deep"}`}>
-                    {i.direction === "in" ? <ArrowDownLeft size={18} aria-hidden /> : <ArrowUpRight size={18} aria-hidden />}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-semibold">{i.direction === "in" ? "From " : "To "}{i.counterpartyUsername ? `@${i.counterpartyUsername}` : shortAddr(i.counterparty)}</span>
-                    <span className="text-sm text-slate">{i.type === "create_account" ? "Account activation" : "Payment"}, {timeAgo(i.createdAt)} ago</span>
-                  </span>
-                  <span className={`tabular font-semibold ${i.direction === "in" ? "text-mint-deep" : ""}`}>{i.direction === "in" ? "+" : "-"}<Amount value={i.amount} asset={i.asset} decimals={7} /></span>
-                </a>
-              </li>
-            ))}
-          </ul>
+        <div className="mb-2 flex items-baseline justify-between gap-3">
+          <h2 id="hist-h" className="text-lg font-semibold">Activity</h2>
+          {activity.length > 0 && <p className="text-sm text-slate">Showing {Math.min(shown, activity.length)} of {activity.length}{moreOnServer ? "+" : ""}</p>}
+        </div>
+        {!h.data ? <ListSkeleton rows={ACTIVITY_FIRST} label="Loading activity" /> : activity.length === 0 ? <Empty title="Nothing yet">Money you send or receive shows up here.</Empty> : (
+          <>
+            <ul className="sheet divide-y divide-line overflow-hidden rounded-3xl">
+              {activity.slice(0, shown).map((i) => (
+                <li key={i.id}>
+                  <a href={i.explorerUrl} target="_blank" rel="noreferrer" className="flex items-center gap-3 px-4 py-3 hover:bg-cloud">
+                    <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${i.direction === "in" ? "bg-mint-soft text-mint-deep" : "bg-cobalt-soft text-cobalt-deep"}`}>
+                      {i.direction === "in" ? <ArrowDownLeft size={18} aria-hidden /> : <ArrowUpRight size={18} aria-hidden />}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-semibold">{i.direction === "in" ? "From " : "To "}{i.counterpartyUsername ? `@${i.counterpartyUsername}` : shortAddr(i.counterparty)}</span>
+                      <span className="text-sm text-slate">{i.type === "create_account" ? "Account activation" : "Payment"}, {timeAgo(i.createdAt)} ago</span>
+                    </span>
+                    <span className={`tabular shrink-0 font-semibold ${i.direction === "in" ? "text-mint-deep" : ""}`}>{i.direction === "in" ? "+" : "-"}<Amount value={i.amount} asset={i.asset} decimals={7} /></span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            {(canShowMore || shown > ACTIVITY_FIRST) && (
+              <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+                {canShowMore && <button className="btn-outline" onClick={showMore} disabled={h.isValidating && shown >= activity.length}>{h.isValidating && shown >= activity.length ? "Loading" : "Show more"}</button>}
+                {shown > ACTIVITY_FIRST && <button className="btn-ghost" onClick={() => { setShown(ACTIVITY_FIRST); document.getElementById("hist-h")?.scrollIntoView({ block: "nearest" }); }}>Show less</button>}
+              </div>
+            )}
+          </>
         )}
       </section>
     </div>

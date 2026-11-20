@@ -1,11 +1,12 @@
 "use client";
 
+import { FeedSkeleton } from "@/components/ui/Loading";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import useSWR from "swr";
 import { PostCard } from "@/components/app/PostCard";
-import { Avatar, Notice, Spinner, timeAgo } from "@/components/ui/bits";
+import { Avatar, Notice, timeAgo } from "@/components/ui/bits";
 import { useSession } from "@/lib/client/session";
 import type { Post, PublicProfile } from "@/lib/client/types";
 
@@ -19,7 +20,7 @@ export default function PostPage() {
   const [body, setBody] = useState("");
   const [err, setErr] = useState<string | null>(null);
   if (post.error) return <div className="p-6"><Notice tone="danger">{(post.error as Error).message}</Notice></div>;
-  if (!post.data) return <div className="p-6"><Spinner /></div>;
+  if (!post.data) return <div className="mx-auto w-full max-w-[720px] px-4 py-6"><FeedSkeleton label="Loading post" /></div>;
   return (
     <div className="mx-auto w-full max-w-[780px]">
       <PostCard key={JSON.stringify([post.data.owned, post.data.like_count])} post={post.data} onChange={() => post.mutate()} />

@@ -1,9 +1,10 @@
 "use client";
 
+import { ListSkeleton } from "@/components/ui/Loading";
 import { CheckCircle2, FileCheck2, HandCoins, Paperclip, Send, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Notice, Spinner, timeAgo } from "@/components/ui/bits";
+import { Notice, timeAgo } from "@/components/ui/bits";
 import { useSession } from "@/lib/client/session";
 import { supabaseBrowser } from "@/lib/client/supabase";
 import type { PreparedIntent, PublicProfile } from "@/lib/client/types";
@@ -95,7 +96,7 @@ export function Chat({ id, onAttachmentsReady }: { id: string; onAttachmentsRead
     window.open(r.url, "_blank", "noopener");
   }
 
-  if (!data) return err ? <Notice tone="danger">{err}</Notice> : <div className="p-6"><Spinner label="Loading messages" /></div>;
+  if (!data) return err ? <Notice tone="danger">{err}</Notice> : <div className="p-4"><ListSkeleton rows={4} label="Loading messages" /></div>;
   const name = (sid: string | null) => data.members.find((m) => m.id === sid)?.username;
 
   return (

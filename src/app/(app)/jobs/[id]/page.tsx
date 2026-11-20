@@ -1,12 +1,13 @@
 "use client";
 
+import { PageSkeleton } from "@/components/ui/Loading";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import useSWR from "swr";
 import { Chat } from "@/components/app/Chat";
-import { Amount, Avatar, Notice, Spinner } from "@/components/ui/bits";
+import { Amount, Avatar, Notice } from "@/components/ui/bits";
 import { Modal } from "@/components/ui/Modal";
 import { STATUS_LABEL, STEPS, stepIndex } from "@/lib/client/jobs";
 import { useSession } from "@/lib/client/session";
@@ -41,7 +42,7 @@ export default function JobPage() {
   const [tab, setTab] = useState<"details" | "chat">("details");
 
   if (error) return <div className="p-6"><Notice tone="danger">{(error as Error).message}</Notice></div>;
-  if (!data) return <div className="p-6"><Spinner /></div>;
+  if (!data) return <PageSkeleton label="Loading job" />;
   const { job, role, escrow } = data;
   const oc = escrow?.onchain ?? null;
   const amount = job.agreed_amount ?? job.budget;
