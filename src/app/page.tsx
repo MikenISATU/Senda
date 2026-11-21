@@ -29,7 +29,7 @@ const ROADMAP = [
 const TEAM = [
   { name: "Miles Kenneth Napilan", role: "Founder and Developer", initials: "MN", tone: "bg-cobalt" },
   { name: "Alicia Amor Cerrudo", role: "Co-founder and Quality Analyst", initials: "AC", tone: "bg-mint-deep" },
-  { name: "RyanChris Ariego", role: "Co-founder", initials: "RA", tone: "bg-ink" },
+  { name: "RyanChris Ariego", role: "UX Project Manager", initials: "RA", tone: "bg-ink" },
 ];
 
 const FAQ = [

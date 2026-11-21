@@ -269,6 +269,6 @@ Not ready for real money yet: the contracts have not had an independent audit, a
 
 - **Miles Kenneth Napilan**, Founder and Developer
 - **Alicia Amor Cerrudo**, Co-founder and Quality Analyst
-- **RyanChris Ariego**, Co-founder
+- **RyanChris Ariego**, UX Project Manager
 
 Part of the Web3 Iloilo community.
