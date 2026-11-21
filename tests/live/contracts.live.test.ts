@@ -22,9 +22,11 @@ import { buildDistributeTx, buildPay, feeConfig, splitterId, splitterOverview } 
 import { getBalances } from "@/lib/stellar/account";
 import { toStroops } from "@/lib/stellar/amount";
 import { asset, assetContractId } from "@/lib/stellar/network";
-import { attachSignature, buildChangeTrustTx, buildPaymentTx, submitClassic, submitSoroban } from "@/lib/stellar/tx";
+import { assertCanSwap, quoteSwap } from "@/lib/server/swap";
+import { attachSignature, buildChangeTrustTx, buildPaymentTx, buildSwapTx, submitClassic, submitSoroban } from "@/lib/stellar/tx";
 
 const XLM = (n: number) => BigInt(Math.round(n * 1e7));
+const formatAmountPlain = (stroops: bigint) => `${stroops / 10_000_000n}.${String(stroops % 10_000_000n).padStart(7, "0")}`;
 const log: string[] = [];
 
 async function fresh(): Promise<Keypair> {
@@ -230,6 +232,37 @@ describe("live testnet: contracts cover every money feature in the app", () => {
     await signAndSend(await buildDistributeTx(cara.publicKey(), "USDC"), cara, "USDC fee distribute");
     const [t3, c3] = await Promise.all([usdc(treasury), usdc(community)]);
     expect(t3 - t2 + (c3 - c2)).toBeGreaterThanOrEqual(XLM(0.1));
+  });
+
+  it("swap: XLM to USDC and back inside one wallet, never below the promised minimum", async () => {
+    const dana = await fresh();
+    const usdc = async () => toStroops((await getBalances(dana.publicKey())).usdc ?? "0");
+
+    // Without USDC turned on, the app refuses before anything is signed.
+    const early = await quoteSwap("XLM", "50");
+    await expect(assertCanSwap(dana.publicKey(), early)).rejects.toThrow(/Turn on USDC/);
+
+    await signAndSend(await buildChangeTrustTx(dana.publicKey(), asset("USDC")), dana, "swap: turn on USDC", true);
+
+    const q1 = await quoteSwap("XLM", "50");
+    expect(q1.to).toBe("USDC");
+    expect(q1.minReceive).toBeLessThan(q1.receive);
+    await assertCanSwap(dana.publicKey(), q1);
+    const x0 = await xlm(dana.publicKey());
+    await signAndSend(await buildSwapTx(dana.publicKey(), { send: asset("XLM"), sendStroops: q1.send, receive: asset("USDC"), minReceiveStroops: q1.minReceive, path: q1.path }), dana, "swap XLM to USDC", true);
+    const got = await usdc();
+    expect(got).toBeGreaterThanOrEqual(q1.minReceive);
+    expect(x0 - (await xlm(dana.publicKey()))).toBeGreaterThanOrEqual(q1.send); // the amount plus the tiny network fee
+
+    const q2 = await quoteSwap("USDC", formatAmountPlain(got / 2n));
+    await assertCanSwap(dana.publicKey(), q2);
+    const x1 = await xlm(dana.publicKey());
+    await signAndSend(await buildSwapTx(dana.publicKey(), { send: asset("USDC"), sendStroops: q2.send, receive: asset("XLM"), minReceiveStroops: q2.minReceive, path: q2.path }), dana, "swap USDC to XLM", true);
+    expect((await usdc())).toBe(got - q2.send);
+    expect((await xlm(dana.publicKey())) - x1 + XLM(0.01)).toBeGreaterThanOrEqual(q2.minReceive);
+
+    // More than the wallet holds is refused up front.
+    await expect(assertCanSwap(dana.publicKey(), await quoteSwap("XLM", "999999"))).rejects.toThrow(/You can swap up to/);
   });
 
   it("writes the transaction log", async () => {

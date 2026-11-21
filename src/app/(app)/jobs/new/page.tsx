@@ -1,9 +1,9 @@
 "use client";
 
+import { ActionError } from "@/components/ui/Dialogs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { PageHeader } from "@/components/app/AppShell";
-import { Notice } from "@/components/ui/bits";
 import { useSession } from "@/lib/client/session";
 
 export default function NewJob() {
@@ -31,7 +31,7 @@ export default function NewJob() {
           <div><label className="label" htmlFor="a">Asset</label><select id="a" className="field" value={f.asset} onChange={set("asset")}><option>USDC</option><option>XLM</option></select></div>
         </div>
         <div><label className="label" htmlFor="dl">Deadline</label><input id="dl" type="datetime-local" className="field" value={f.deadline} onChange={set("deadline")} required /><p className="hint">If no proof arrives by the deadline, you can reclaim the escrow in full.</p></div>
-        {err && <Notice tone="danger">{err}</Notice>}
+        <ActionError error={err} onClose={() => setErr(null)} />
         <button className="btn-primary" disabled={busy}>{busy ? "Posting" : "Post job"}</button>
       </form>
     </div>

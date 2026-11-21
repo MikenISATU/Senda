@@ -3,11 +3,13 @@
 import { useSignRawHash } from "@privy-io/react-auth/extended-chains";
 import { createContext, useCallback, useContext, useRef, useState } from "react";
 import { TxDialog } from "@/components/ui/TxDialog";
+import { friendlyError, logError, type Friendly } from "./errors";
 import { useSession } from "./session";
 import type { IntentStatus, PreparedIntent } from "./types";
 
 type Phase = "idle" | "preparing" | "review" | "signing" | "submitting" | "done" | "error";
-export type TxState = { phase: Phase; intent: PreparedIntent | null; status: IntentStatus | null; error: string | null };
+/** `error` is always written for a person; `problem` carries the code and details behind it. */
+export type TxState = { phase: Phase; intent: PreparedIntent | null; status: IntentStatus | null; error: string | null; problem?: Friendly | null };
 
 type Ctx = { run: (prepare: () => Promise<PreparedIntent>, opts?: { onConfirmed?: (s: IntentStatus) => void }) => void };
 const TxCtx = createContext<Ctx | null>(null);
@@ -33,7 +35,9 @@ export function TxProvider({ children }: { children: React.ReactNode }) {
       const intent = await prepare();
       setState({ phase: "review", intent, status: null, error: null });
     } catch (e) {
-      setState({ phase: "error", intent: null, status: null, error: (e as Error).message });
+      const problem = friendlyError(e);
+      logError("payment:prepare", problem);
+      setState({ phase: "error", intent: null, status: null, error: problem.message, problem });
     }
   }, []);
 
@@ -41,18 +45,23 @@ export function TxProvider({ children }: { children: React.ReactNode }) {
     const intent = state.intent;
     if (!intent) return;
     if (Date.parse(intent.expiresAt) < Date.now()) {
-      setState((s) => ({ ...s, phase: "error", error: "This request expired before signing. Nothing was sent. Start again." }));
+      const problem = friendlyError(new Error("expired"));
+      setState((s) => ({ ...s, phase: "error", error: problem.message, problem }));
       return;
     }
-    setState((s) => ({ ...s, phase: "signing" }));
+    setState((s) => ({ ...s, phase: "signing", error: null, problem: null }));
     let signature: string;
     try {
       ({ signature } = await signRawHash({ address: intent.signer, chainType: "stellar", hash: `0x${intent.hash}` }));
     } catch (e) {
-      setState((s) => ({ ...s, phase: "review", error: `Signing was cancelled or failed: ${(e as Error).message}` }));
+      // Nothing has been sent yet, so this is always safe to retry.
+      const problem = friendlyError(e);
+      if (problem.code === "UNKNOWN") Object.assign(problem, { code: "WALLET-FAILED", title: "Your wallet couldn't approve this", message: "Nothing was sent. Try again. If it keeps happening, close Senda and open it again." });
+      logError("payment:sign", problem);
+      setState((s) => ({ ...s, phase: "review", error: problem.message, problem }));
       return;
     }
-    setState((s) => ({ ...s, phase: "submitting", error: null }));
+    setState((s) => ({ ...s, phase: "submitting", error: null, problem: null }));
     try {
       let st = await api<IntentStatus>("/api/tx/submit", { body: { intentId: intent.intentId, signature } });
       for (let i = 0; i < 20 && st.status === "submitted"; i++) {
@@ -63,7 +72,9 @@ export function TxProvider({ children }: { children: React.ReactNode }) {
       if (st.status === "confirmed") cbRef.current?.(st);
     } catch (e) {
       // Uncertain: keep the original intent; the user can re-check, never re-sign blindly.
-      setState((s) => ({ ...s, phase: "done", status: s.status, error: `${(e as Error).message}. Your transaction may still complete; check its status before trying again.` }));
+      const problem = friendlyError(e, { moneyMayHaveMoved: true });
+      logError("payment:submit", problem, { intentId: intent.intentId });
+      setState((s) => ({ ...s, phase: "done", status: s.status, error: problem.message, problem }));
     }
   }, [api, signRawHash, state.intent]);
 
@@ -71,10 +82,11 @@ export function TxProvider({ children }: { children: React.ReactNode }) {
     if (!state.intent) return;
     try {
       const st = await api<IntentStatus>(`/api/tx/${state.intent.intentId}`);
-      setState((s) => ({ ...s, status: st, error: null }));
+      setState((s) => ({ ...s, status: st, error: null, problem: null }));
       if (st.status === "confirmed") cbRef.current?.(st);
     } catch (e) {
-      setState((s) => ({ ...s, error: (e as Error).message }));
+      const problem = friendlyError(e, { moneyMayHaveMoved: true });
+      setState((s) => ({ ...s, error: problem.message, problem }));
     }
   }, [api, state.intent]);
 

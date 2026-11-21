@@ -1,5 +1,6 @@
 "use client";
 
+import { ActionError } from "@/components/ui/Dialogs";
 import { PageSkeleton } from "@/components/ui/Loading";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
@@ -89,7 +90,7 @@ export default function JobPage() {
         <div className="space-y-4">
           <section className="sheet p-5" aria-labelledby="status-h">
             <h2 id="status-h" className="text-lg font-semibold">{STATUS_LABEL[job.status]}</h2>
-            {err && <div className="mt-3"><Notice tone="danger">{err}</Notice></div>}
+            <ActionError error={err} onClose={() => setErr(null)} />
             <div className="mt-3 flex flex-wrap gap-2">
               {/* Open job */}
               {job.status === "DRAFT" && role === "client" && <button className="btn-outline" onClick={() => call(async () => { await api(`/api/jobs/${id}`, { method: "DELETE" }); router.push("/jobs"); })}>Cancel job</button>}
@@ -223,7 +224,7 @@ function ApplyForm({ jobId, applied, onDone }: { jobId: string; applied: boolean
       <form className="mt-3 space-y-3" onSubmit={async (e) => { e.preventDefault(); setErr(null); try { await api(`/api/jobs/${jobId}/apply`, { body: { note, proposedAmount: amt || undefined } }); onDone(); } catch (x) { setErr((x as Error).message); } }}>
         <div><label className="label" htmlFor="note">Why you're a fit</label><textarea id="note" className="field min-h-24 py-2.5" value={note} onChange={(e) => setNote(e.target.value)} required maxLength={2000} /></div>
         <div className="sm:max-w-xs"><label className="label" htmlFor="pa">Your price (optional)</label><input id="pa" className="field tabular" inputMode="decimal" value={amt} onChange={(e) => setAmt(e.target.value)} /></div>
-        {err && <Notice tone="danger">{err}</Notice>}
+        <ActionError error={err} onClose={() => setErr(null)} />
         <button className="btn-primary">Send application</button>
       </form>
     </section>
@@ -241,7 +242,7 @@ function OfferModal({ jobId, asset, target, defaultDeadline, onClose, onDone }: 
         <div><label className="label" htmlFor="oa">Amount ({asset})</label><input id="oa" className="field tabular" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} required /></div>
         <div><label className="label" htmlFor="od">Deadline</label><input id="od" type="datetime-local" className="field" value={deadline} onChange={(e) => setDeadline(e.target.value)} required /></div>
         <p className="text-sm text-slate">If they accept, you lock exactly this amount before work starts.</p>
-        {err && <Notice tone="danger">{err}</Notice>}
+        <ActionError error={err} onClose={() => setErr(null)} />
         <button className="btn-primary w-full">Send offer</button>
       </form>
     </Modal>
@@ -287,7 +288,7 @@ function ProofForm({ jobId, conversationId, onDone }: { jobId: string; conversat
     }}>
       <div><label className="label" htmlFor="pn">What you delivered</label><textarea id="pn" className="field min-h-24 py-2.5" value={note} onChange={(e) => setNote(e.target.value)} required maxLength={2000} /></div>
       <div><label className="label" htmlFor="pf">Evidence files</label><input id="pf" type="file" multiple onChange={(e) => setFiles(Array.from(e.target.files ?? []).slice(0, 10))} className="block text-sm" /><p className="hint">Files are hashed on the server; the combined hash is recorded on-chain.</p></div>
-      {err && <Notice tone="danger">{err}</Notice>}
+      <ActionError error={err} onClose={() => setErr(null)} />
       <div className="flex gap-2"><button className="btn-primary" disabled={busy}>{busy ? "Uploading" : "Review and submit"}</button><button type="button" className="btn-ghost" onClick={() => setOpen(false)}>Cancel</button></div>
     </form>
   );

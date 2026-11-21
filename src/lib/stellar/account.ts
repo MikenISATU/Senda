@@ -65,6 +65,8 @@ export type HistoryItem = {
   asset: AssetCode | string;
   amount: string;
   counterparty: string | null;
+  /** For a swap inside the wallet: what was paid, e.g. "10 XLM". */
+  paid?: string;
 };
 
 /** Payment-like operations for an account (newest first). */
@@ -86,6 +88,14 @@ export async function getPaymentHistory(address: string, limit = 30, cursor?: st
           id: r.id, txHash: r.transaction_hash, createdAt: r.created_at, type: r.type,
           direction: rec.account === address ? "in" : "out", asset: "XLM", amount: rec.starting_balance,
           counterparty: rec.account === address ? rec.funder : rec.account,
+        });
+      } else if (r.type.startsWith("path_payment") && rec.from === address && rec.to === address) {
+        // The user swapped one currency for another inside their own wallet.
+        const paidCode = rec.source_asset_type === "native" ? "XLM" : rec.source_asset_code === "USDC" && rec.source_asset_issuer === issuer ? "USDC" : rec.source_asset_code ?? "OTHER";
+        items.push({
+          id: r.id, txHash: r.transaction_hash, createdAt: r.created_at, type: "swap",
+          direction: "in", asset: assetCode, amount: rec.amount, counterparty: null,
+          paid: `${Number(rec.source_amount)} ${paidCode}`,
         });
       } else if (r.type === "payment" || r.type.startsWith("path_payment")) {
         const incoming = rec.to === address;

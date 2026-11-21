@@ -1,5 +1,6 @@
 "use client";
 
+import { useDialog } from "@/components/ui/Dialogs";
 import { BadgeCheck, Flag, Gem, Heart, MessageCircle, Repeat2, Trash2, Coins } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -11,6 +12,7 @@ import { TipModal } from "./TipModal";
 
 export function PostCard({ post, onChange, onRemoved }: { post: Post; onChange?: () => void; onRemoved?: () => void }) {
   const { api, profile } = useSession();
+  const dialog = useDialog();
   const { run } = useTx();
   const [p, setP] = useState(post);
   const [tipOpen, setTipOpen] = useState(false);
@@ -45,12 +47,26 @@ export function PostCard({ post, onChange, onRemoved }: { post: Post; onChange?:
         )}
         {mine ? (
           <button aria-label="Delete post" className="icon-btn size-10 ring-0 hover:text-danger"
-            onClick={async () => { if (confirmDelete()) { await api(`/api/posts/${p.id}`, { method: "DELETE" }); onRemoved?.(); } }}>
+            onClick={async () => {
+              const yes = await dialog.confirm({ title: "Delete this post?", message: "It will be removed from the feed. People who bought it keep it.", confirmLabel: "Delete", cancelLabel: "Keep it", tone: "danger" });
+              if (!yes) return;
+              try { await api(`/api/posts/${p.id}`, { method: "DELETE" }); onRemoved?.(); } catch (e) { dialog.error(e); }
+            }}>
             <Trash2 size={17} />
           </button>
         ) : (
           <button aria-label="Report post" className="icon-btn size-10 ring-0 text-slate"
-            onClick={async () => { const r = prompt("Why are you reporting this post?"); if (r && r.length >= 3) await api("/api/reports", { body: { entityType: "post", entityId: shown.id, reason: r } }); }}>
+            onClick={async () => {
+              const reason = await dialog.ask({
+                title: "Report this post", message: "Tell us what's wrong. Only the Senda team sees this.",
+                options: REPORT_REASONS, label: "What's the problem?", placeholder: "Pick one above or write your own", minLength: 3, maxLength: 500, confirmLabel: "Send report",
+              });
+              if (!reason) return;
+              try {
+                await api("/api/reports", { body: { entityType: "post", entityId: shown.id, reason } });
+                dialog.notify({ title: "Report sent", message: "Thanks for telling us. We'll take a look." });
+              } catch (e) { dialog.error(e); }
+            }}>
             <Flag size={16} />
           </button>
         )}
@@ -119,7 +135,7 @@ export function PostCard({ post, onChange, onRemoved }: { post: Post; onChange?:
             <MessageCircle size={21} aria-hidden /> <span className="tabular text-sm">{shown.comment_count}</span>
           </Link>
           <button aria-label="Share to your followers" className="tap inline-flex items-center gap-1.5 rounded-full px-2.5 hover:text-ink disabled:opacity-40" disabled={mine}
-            onClick={async () => { try { await api(`/api/posts/${shown.id}/repost`, { body: {} }); onChange?.(); } catch (e) { alertInline(e); } }}>
+            onClick={async () => { try { await api(`/api/posts/${shown.id}/repost`, { body: {} }); onChange?.(); } catch (e) { dialog.error(e); } }}>
             <Repeat2 size={21} aria-hidden /> <span className="tabular text-sm">{shown.repost_count}</span>
           </button>
           <span className="ml-auto" />
@@ -131,9 +147,4 @@ export function PostCard({ post, onChange, onRemoved }: { post: Post; onChange?:
   );
 }
 
-function confirmDelete() {
-  return typeof window !== "undefined" && window.confirm("Delete this post? Buyers keep their purchase records.");
-}
-function alertInline(e: unknown) {
-  if (typeof window !== "undefined") window.alert((e as Error).message);
-}
+const REPORT_REASONS = ["Spam", "Scam or fraud", "Harassment", "Inappropriate", "Stolen content"];

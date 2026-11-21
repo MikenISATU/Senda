@@ -1,5 +1,6 @@
 "use client";
 
+import { ActionError } from "@/components/ui/Dialogs";
 import { FeedSkeleton } from "@/components/ui/Loading";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -32,7 +33,7 @@ export default function PostPage() {
         <input id="c" className="field" value={body} onChange={(e) => setBody(e.target.value)} placeholder="Write a comment" maxLength={1000} />
         <button className="btn-primary" disabled={!body.trim()}>Reply</button>
       </form>
-      {err && <div className="px-4 py-2"><Notice tone="danger">{err}</Notice></div>}
+      <ActionError error={err} onClose={() => setErr(null)} />
       <ul>
         {comments.data?.map((c) => (
           <li key={c.id} className="flex gap-3 border-b border-line px-4 py-3 md:px-6">

@@ -1,5 +1,6 @@
 "use client";
 
+import { ActionError } from "@/components/ui/Dialogs";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -57,7 +58,7 @@ export default function Onboarding() {
             <label className="label" htmlFor="d">Display name</label>
             <input id="d" className="field" value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={50} required />
           </div>
-          {err && <Notice tone="danger">{err}</Notice>}
+          <ActionError error={err} onClose={() => setErr(null)} />
           <button className="btn-primary w-full" disabled={saving}>{saving ? "Saving" : "Continue"}</button>
         </form>
       ) : (

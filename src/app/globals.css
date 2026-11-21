@@ -154,3 +154,11 @@ html[data-theme="dark"] .senda-app ::selection { background: #2D4FD6; color: #ff
   .skeleton, .splash-ring, .splash-mark { animation: none; }
   .route-progress { transition: none; }
 }
+
+/* ───────────── Dialogs ─────────────
+   Every pop-up (confirm, ask, error, payment review) is the same centred card. */
+.senda-dialog[open] { animation: senda-pop 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.2); }
+.senda-dialog[open]::backdrop { animation: senda-fade 0.18s ease-out; }
+@keyframes senda-pop { from { opacity: 0; transform: translateY(8px) scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes senda-fade { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .senda-dialog[open], .senda-dialog[open]::backdrop { animation: none; } }

@@ -1,5 +1,6 @@
 "use client";
 
+import { ActionError } from "@/components/ui/Dialogs";
 import { ListSkeleton } from "@/components/ui/Loading";
 import { CheckCircle2, FileCheck2, HandCoins, Paperclip, Send, X } from "lucide-react";
 import Link from "next/link";
@@ -31,8 +32,11 @@ export function Chat({ id, onAttachmentsReady }: { id: string; onAttachmentsRead
   const [reqAsset, setReqAsset] = useState<"USDC" | "XLM">("USDC");
   const [reqNote, setReqNote] = useState("");
 
+  const loaded = useRef(false);
   const load = useCallback(async () => {
-    try { setData(await api<R>(`/api/conversations/${id}/messages`)); } catch (e) { setErr((e as Error).message); }
+    try { setData(await api<R>(`/api/conversations/${id}/messages`)); loaded.current = true; }
+    // Only the first load reports a problem. Later refreshes fail quietly (the offline bar covers that) so a pop-up never repeats.
+    catch (e) { if (!loaded.current) setErr((e as Error).message); }
   }, [api, id]);
 
   useEffect(() => { load(); }, [load]);
@@ -159,7 +163,7 @@ export function Chat({ id, onAttachmentsReady }: { id: string; onAttachmentsRead
         })}
         <div ref={bottom} />
       </ol>
-      {err && <div className="px-4"><Notice tone="danger">{err}</Notice></div>}
+      <ActionError error={err} onClose={() => setErr(null)} />
       <form onSubmit={send} className="sticky bottom-16 border-t border-line bg-cloud px-4 py-3 md:bottom-0 md:px-6">
         {pending.length > 0 && (
           <ul className="mb-2 flex flex-wrap gap-2">

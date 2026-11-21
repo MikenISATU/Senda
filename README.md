@@ -24,6 +24,7 @@ It runs on the Stellar test network today. Balances are free test money with no 
 | Sign in with your email | A wallet is created for you. No passwords or seed words. Only you can approve a payment from it. |
 | Pick a username | Friends pay `@you` instead of a long wallet address. |
 | Send or request money | Pay anyone by username, or ask for money inside a chat. The other person taps **Pay** and the request turns into **Paid** once the money lands. |
+| Swap | Change XLM to USDC or back inside your own wallet at the live price. You see the exact amounts first, and Senda takes no fee. |
 | Tip a post | The creator is paid straight away. |
 | Sell a post | Mark a post as Premium and set your own price in USDC. The post stays visible to everyone; buyers become owners. Bidding is planned for later. |
 | Hire someone | You lock the payment before work starts. It is released when you approve the work, refunded if the deadline passes with nothing delivered, or split by a mediator if you disagree. |

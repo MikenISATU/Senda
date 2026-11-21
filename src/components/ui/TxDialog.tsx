@@ -2,6 +2,8 @@
 
 import { CheckCircle2, ExternalLink, XCircle } from "lucide-react";
 import type { TxState } from "@/lib/client/useTx";
+import { friendlyError } from "@/lib/client/errors";
+import { ErrorNote } from "./ErrorNote";
 import { Modal } from "./Modal";
 import { Notice, Spinner } from "./bits";
 
@@ -14,7 +16,7 @@ export function TxDialog({ state, onConfirm, onClose, onRecheck }: { state: TxSt
     state.phase === "done" && st?.status === "confirmed" ? "Done"
     : state.phase === "done" && st?.status === "failed" ? "It didn't go through"
     : state.phase === "done" ? "Almost there"
-    : state.phase === "error" ? "Could not prepare"
+    : state.phase === "error" ? (state.problem?.title ?? "This can't be done right now")
     : s?.title ?? "Preparing";
   return (
     <Modal open={open} onClose={onClose} title={title} dismissable={!busy}>
@@ -36,7 +38,7 @@ export function TxDialog({ state, onConfirm, onClose, onRecheck }: { state: TxSt
               </div>
             </dl>
             <p className="text-sm text-slate">{s.feeNote}. You are signing exactly this transaction; Senda cannot change it after you approve.</p>
-            {state.error && <Notice tone="warn">{state.error}</Notice>}
+            {state.error && <ErrorNote compact error={state.problem ?? state.error} />}
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button className="btn-ghost" onClick={onClose} disabled={busy}>Cancel</button>
               <button className="btn-primary" onClick={onConfirm} disabled={busy}>
@@ -49,8 +51,8 @@ export function TxDialog({ state, onConfirm, onClose, onRecheck }: { state: TxSt
 
         {state.phase === "error" && (
           <>
-            <Notice tone="danger">{state.error}</Notice>
-            <div className="flex justify-end"><button className="btn-outline" onClick={onClose}>Close</button></div>
+            <ErrorNote error={state.problem ?? state.error} />
+            <div className="flex justify-end"><button className="btn-outline w-full sm:w-auto" onClick={onClose}>Close</button></div>
           </>
         )}
 
@@ -60,19 +62,22 @@ export function TxDialog({ state, onConfirm, onClose, onRecheck }: { state: TxSt
               <p className="flex items-center gap-2 text-mint-deep"><CheckCircle2 aria-hidden /> Payment complete.</p>
             )}
             {st?.status === "failed" && (
-              <p className="flex items-center gap-2 text-danger"><XCircle aria-hidden /> {st.error ?? "It was rejected. No money moved."}</p>
+              <>
+                <p className="flex items-center gap-2 font-semibold text-danger"><XCircle aria-hidden /> It didn't go through</p>
+                <ErrorNote compact error={friendlyError(new Error(st.error ?? "The network rejected this payment. No money moved."), { fromServer: true })} />
+              </>
             )}
             {(!st || st.status === "submitted") && (
               <Notice tone="warn">Sent, but not confirmed yet. Don't send it again. Check back in a moment.</Notice>
             )}
-            {state.error && <Notice tone="warn">{state.error}</Notice>}
+            {state.error && <ErrorNote compact error={state.problem ?? state.error} />}
             {st?.explorerUrl && (
               <a className="link inline-flex items-center gap-1.5 text-sm" href={st.explorerUrl} target="_blank" rel="noreferrer">
                 View on Stellar Expert <ExternalLink size={14} aria-hidden />
               </a>
             )}
             {st?.hash && <p className="tabular break-all text-xs text-slate">Tx {st.hash}</p>}
-            <div className="flex justify-end gap-2">
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               {(!st || st.status === "submitted") && <button className="btn-outline" onClick={onRecheck}>Check status</button>}
               <button className="btn-ink" onClick={onClose}>Done</button>
             </div>

@@ -55,6 +55,23 @@ export async function buildPaymentTx(source: string, legs: PaymentLeg[], memo?: 
   return b.build();
 }
 
+/**
+ * Swap one currency for another inside the user's own wallet, using Stellar's
+ * built-in exchange. Sends exactly `sendStroops` and fails (nothing moves) if
+ * the user would receive less than `minReceiveStroops`.
+ */
+export async function buildSwapTx(source: string, a: { send: Asset; sendStroops: bigint; receive: Asset; minReceiveStroops: bigint; path: Asset[] }): Promise<Transaction> {
+  if (a.sendStroops <= 0n || a.minReceiveStroops <= 0n) throw new TxBuildError("Invalid swap amount.");
+  const acct = await sourceAccount(source);
+  return new TransactionBuilder(acct, { fee: CLASSIC_FEE, networkPassphrase: network().passphrase })
+    .setTimeout(TX_TIMEOUT_SECONDS)
+    .addOperation(Operation.pathPaymentStrictSend({
+      sendAsset: a.send, sendAmount: toSdkAmount(a.sendStroops),
+      destination: source, destAsset: a.receive, destMin: toSdkAmount(a.minReceiveStroops), path: a.path,
+    }))
+    .build();
+}
+
 export async function buildChangeTrustTx(source: string, asset: Asset): Promise<Transaction> {
   const acct = await sourceAccount(source);
   return new TransactionBuilder(acct, { fee: CLASSIC_FEE, networkPassphrase: network().passphrase })

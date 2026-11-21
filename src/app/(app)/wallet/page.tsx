@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDownLeft, ArrowUpRight, Copy, ExternalLink } from "lucide-react";
+import { ArrowDownLeft, ArrowDownUp, ArrowUpRight, Copy, ExternalLink, Repeat } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
@@ -15,7 +15,7 @@ import type { PreparedIntent } from "@/lib/client/types";
 import { useTx } from "@/lib/client/useTx";
 
 type W = { address: string; balances: { exists: boolean; xlm: string; usdc: string | null; xlmAvailable: string }; network: string; explorer: string };
-type H = { items: { id: string; txHash: string; createdAt: string; direction: "in" | "out"; asset: string; amount: string; counterparty: string | null; counterpartyUsername: string | null; explorerUrl: string; type: string }[]; next: string | null };
+type H = { items: { id: string; txHash: string; createdAt: string; direction: "in" | "out"; asset: string; amount: string; counterparty: string | null; counterpartyUsername: string | null; explorerUrl: string; type: string; paid?: string }[]; next: string | null };
 
 /** How many activity rows show at first, and how many each "Show more" adds. */
 const ACTIVITY_FIRST = 5;
@@ -40,7 +40,7 @@ export default function WalletPage() {
     if (next > activity.length && moreOnServer) h.setSize(h.size + 1);
     setShown(next);
   }
-  const [tab, setTab] = useState<"send" | "receive">("send");
+  const [tab, setTab] = useState<"send" | "receive" | "swap">("send");
   const [to, setTo] = useState("");
   const [amount, setAmount] = useState("");
   const [asset, setAsset] = useState<"XLM" | "USDC">("USDC");
@@ -48,7 +48,7 @@ export default function WalletPage() {
   const [copied, setCopied] = useState(false);
   const refresh = () => { w.mutate(); h.mutate(); };
   useEffect(() => {
-    const sync = () => { if (location.hash === "#receive") setTab("receive"); };
+    const sync = () => { if (location.hash === "#receive") setTab("receive"); if (location.hash === "#swap") setTab("swap"); };
     sync();
     window.addEventListener("hashchange", sync);
     return () => window.removeEventListener("hashchange", sync);
@@ -86,8 +86,8 @@ export default function WalletPage() {
 
       <section id="receive" className="sheet mt-4 scroll-mt-24 rounded-3xl p-5 md:p-6" aria-label="Send or receive">
         <div role="tablist" className="mb-4 flex gap-1">
-          {(["send", "receive"] as const).map((t) => (
-            <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)} className={`tap rounded-full px-5 text-sm font-semibold ${tab === t ? "bg-cloud text-ink ring-1 ring-line" : "text-slate hover:text-ink"}`}>{t === "send" ? "Send" : "Receive"}</button>
+          {(["send", "receive", "swap"] as const).map((t) => (
+            <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)} className={`tap rounded-full px-5 text-sm font-semibold ${tab === t ? "bg-cloud text-ink ring-1 ring-line" : "text-slate hover:text-ink"}`}>{t === "send" ? "Send" : t === "receive" ? "Receive" : "Swap"}</button>
           ))}
         </div>
         {tab === "send" ? (
@@ -104,6 +104,8 @@ export default function WalletPage() {
             <button className="btn-primary w-full sm:w-auto" disabled={!to || !amount}>Continue</button>
             {!!config?.sendFeeBps && <p className="hint">{(config.sendFeeBps / 100).toFixed(2).replace(/\.?0+$/, "")}% fee, shown before you confirm.</p>}
           </form>
+        ) : tab === "swap" ? (
+          <SwapForm usdcOn={b ? b.usdc !== null : true} xlm={b?.xlmAvailable ?? "0"} usdc={b?.usdc ?? "0"} onDone={refresh} />
         ) : w.data ? (
           <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:items-start sm:text-left">
             <div className="rounded-xl bg-snow p-3"><QRCodeSVG value={`web+stellar:pay?destination=${w.data.address}`} size={168} level="M" title="Your wallet QR code" /></div>
@@ -135,12 +137,12 @@ export default function WalletPage() {
               {activity.slice(0, shown).map((i) => (
                 <li key={i.id}>
                   <a href={i.explorerUrl} target="_blank" rel="noreferrer" className="flex items-center gap-3 px-4 py-3 hover:bg-cloud">
-                    <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${i.direction === "in" ? "bg-mint-soft text-mint-deep" : "bg-cobalt-soft text-cobalt-deep"}`}>
-                      {i.direction === "in" ? <ArrowDownLeft size={18} aria-hidden /> : <ArrowUpRight size={18} aria-hidden />}
+                    <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${i.type === "swap" ? "bg-cloud text-ink ring-1 ring-line" : i.direction === "in" ? "bg-mint-soft text-mint-deep" : "bg-cobalt-soft text-cobalt-deep"}`}>
+                      {i.type === "swap" ? <Repeat size={17} aria-hidden /> : i.direction === "in" ? <ArrowDownLeft size={18} aria-hidden /> : <ArrowUpRight size={18} aria-hidden />}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate font-semibold">{i.direction === "in" ? "From " : "To "}{i.counterpartyUsername ? `@${i.counterpartyUsername}` : shortAddr(i.counterparty)}</span>
-                      <span className="text-sm text-slate">{i.type === "create_account" ? "Account activation" : "Payment"}, {timeAgo(i.createdAt)} ago</span>
+                      <span className="block truncate font-semibold">{i.type === "swap" ? `Swapped ${i.paid ?? ""}` : `${i.direction === "in" ? "From " : "To "}${i.counterpartyUsername ? `@${i.counterpartyUsername}` : shortAddr(i.counterparty)}`}</span>
+                      <span className="text-sm text-slate">{i.type === "swap" ? "Swap" : i.type === "create_account" ? "Account activation" : "Payment"}, {timeAgo(i.createdAt)} ago</span>
                     </span>
                     <span className={`tabular shrink-0 font-semibold ${i.direction === "in" ? "text-mint-deep" : ""}`}>{i.direction === "in" ? "+" : "-"}<Amount value={i.amount} asset={i.asset} decimals={7} /></span>
                   </a>
@@ -157,5 +159,77 @@ export default function WalletPage() {
         )}
       </section>
     </div>
+  );
+}
+
+type Quote = { from: "XLM" | "USDC"; to: "XLM" | "USDC"; send: string; receive: string; minReceive: string; rate: string; slippagePercent: number };
+
+/** Swap between XLM and USDC inside your own wallet, at the live price. */
+function SwapForm({ usdcOn, xlm, usdc, onDone }: { usdcOn: boolean; xlm: string; usdc: string; onDone: () => void }) {
+  const { api } = useSession();
+  const { run } = useTx();
+  const [from, setFrom] = useState<"XLM" | "USDC">("XLM");
+  const [amount, setAmount] = useState("");
+  const [typed, setTyped] = useState("");
+  const to = from === "XLM" ? "USDC" : "XLM";
+  const have = from === "XLM" ? xlm : usdc;
+  // Ask for a price shortly after typing stops, and refresh it while the form is open.
+  useEffect(() => { const t = setTimeout(() => setTyped(amount), 350); return () => clearTimeout(t); }, [amount]);
+  const valid = Number(typed) > 0;
+  const q = useSWR(valid ? `/api/swap/quote?from=${from}&amount=${encodeURIComponent(typed)}` : null, (u: string) => api<Quote>(u), { refreshInterval: 15_000, keepPreviousData: false, shouldRetryOnError: false });
+  const waiting = valid && (amount !== typed || q.isLoading);
+  const needsUsdc = to === "USDC" && !usdcOn;
+
+  return (
+    <form className="space-y-3" onSubmit={(e) => {
+      e.preventDefault();
+      run(() => api<PreparedIntent>("/api/swap/prepare", { body: { from, amount, idempotencyKey: crypto.randomUUID() } }), { onConfirmed: () => { setAmount(""); onDone(); } });
+    }}>
+      <div className="rounded-2xl bg-cloud p-4 ring-1 ring-line">
+        <div className="flex items-center justify-between gap-3">
+          <label className="text-sm font-semibold text-slate" htmlFor="swap-amt">You pay</label>
+          <button type="button" className="tap text-sm text-slate hover:text-ink" onClick={() => setAmount(String(Math.max(0, Math.floor((Number(have) - (from === "XLM" ? 0.5 : 0)) * 100) / 100)))}>
+            You have <Amount value={have} decimals={2} /> {from}
+          </button>
+        </div>
+        <div className="mt-1 flex items-center gap-3">
+          <input id="swap-amt" className="tabular min-w-0 flex-1 bg-transparent font-display text-3xl font-semibold outline-none placeholder:text-slate/50" inputMode="decimal" placeholder="0" value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))} />
+          <span className="rounded-full bg-white px-4 py-2 text-sm font-bold ring-1 ring-line">{from}</span>
+        </div>
+      </div>
+
+      <div className="relative z-10 -my-5 flex justify-center">
+        <button type="button" aria-label={`Switch to swapping ${to} for ${from}`} onClick={() => { setFrom(to); setAmount(""); }} className="grad grid size-11 place-items-center rounded-full ring-4 ring-white transition-transform hover:rotate-180">
+          <ArrowDownUp size={18} aria-hidden />
+        </button>
+      </div>
+
+      <div className="rounded-2xl bg-cloud p-4 ring-1 ring-line" aria-live="polite">
+        <p className="text-sm font-semibold text-slate">You get about</p>
+        <div className="mt-1 flex items-center gap-3">
+          <p className="tabular min-w-0 flex-1 truncate font-display text-3xl font-semibold">
+            {waiting ? <Skeleton className="inline-block h-8 w-32 align-middle" /> : q.data && valid ? <Amount value={q.data.receive} decimals={4} /> : <span className="text-slate/50">0</span>}
+          </p>
+          <span className="rounded-full bg-white px-4 py-2 text-sm font-bold ring-1 ring-line">{to}</span>
+        </div>
+      </div>
+
+      {q.data && valid && !waiting && (
+        <dl className="space-y-1 px-1 text-sm text-slate">
+          <div className="flex justify-between gap-3"><dt>Price</dt><dd className="tabular text-ink">1 {q.data.from} = {q.data.rate} {q.data.to}</dd></div>
+          <div className="flex justify-between gap-3"><dt>You get at least</dt><dd className="tabular text-ink"><Amount value={q.data.minReceive} decimals={4} /> {q.data.to}</dd></div>
+          <div className="flex justify-between gap-3"><dt>Senda fee</dt><dd className="text-ink">None</dd></div>
+        </dl>
+      )}
+      {q.error && valid && !waiting && <Notice tone="warn">{(q.error as Error).message}</Notice>}
+      {needsUsdc && (
+        <Notice tone="info">
+          Turn on USDC first so your wallet can hold it.{" "}
+          <button type="button" className="font-semibold underline" onClick={() => run(() => api<PreparedIntent>("/api/trustline/prepare", { body: {} }), { onConfirmed: onDone })}>Turn on USDC</button>
+        </Notice>
+      )}
+      <button className="btn-primary w-full" disabled={!valid || waiting || !q.data || needsUsdc}>Review swap</button>
+      <p className="hint">Swaps use Stellar's built-in exchange at the live price. You see the exact amounts before you confirm.</p>
+    </form>
   );
 }

@@ -1,8 +1,8 @@
 "use client";
 
+import { ActionError } from "@/components/ui/Dialogs";
 import { Gem, ImagePlus, X } from "lucide-react";
 import { useRef, useState } from "react";
-import { Notice } from "@/components/ui/bits";
 import { useSession } from "@/lib/client/session";
 import type { Post } from "@/lib/client/types";
 import { uploadFile } from "@/lib/client/upload";
@@ -66,7 +66,7 @@ export function Composer({ onPosted }: { onPosted: (p: Post) => void }) {
           <p id="price-hint" className="w-full text-sm text-slate sm:w-auto sm:flex-1">Everyone can see the post. People can buy it to own it.</p>
         </div>
       )}
-      {err && <div className="mt-2"><Notice tone="danger">{err}</Notice></div>}
+      <ActionError error={err} onClose={() => setErr(null)} />
       <div className="mt-3 flex items-center justify-between gap-2">
         <div className="flex items-center gap-1">
           <input ref={input} type="file" accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,application/pdf,application/zip" multiple hidden

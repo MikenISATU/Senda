@@ -2,6 +2,7 @@
 
 import { PrivyProvider } from "@privy-io/react-auth";
 import { SWRConfig } from "swr";
+import { DialogProvider } from "@/components/ui/Dialogs";
 import { SessionProvider } from "@/lib/client/session";
 import { TxProvider } from "@/lib/client/useTx";
 
@@ -27,7 +28,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     >
       <SWRConfig value={{ revalidateOnFocus: false, shouldRetryOnError: false }}>
         <SessionProvider>
-          <TxProvider>{children}</TxProvider>
+          <DialogProvider><TxProvider>{children}</TxProvider></DialogProvider>
         </SessionProvider>
       </SWRConfig>
     </PrivyProvider>

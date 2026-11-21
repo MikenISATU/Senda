@@ -5,7 +5,8 @@ import useSWR from "swr";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Amount, Avatar, Notice } from "@/components/ui/bits";
+import { Amount, Avatar } from "@/components/ui/bits";
+import { ErrorScreen, OfflineBar } from "@/components/ui/ErrorNote";
 import { Skeleton, Splash } from "@/components/ui/Loading";
 import { useSession } from "@/lib/client/session";
 import { Logo } from "@/components/Logo";
@@ -37,10 +38,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   if (s.status === "error") {
     return (
-      <main className="mx-auto max-w-lg px-4 py-16">
-        <Notice tone="danger">{s.error}</Notice>
-        <button className="btn-outline mt-4" onClick={() => location.reload()}>Try again</button>
-      </main>
+      <ErrorScreen error={s.error ?? "Senda couldn't load your account."} />
     );
   }
   if (s.status !== "ready" || !s.profile?.username) {
@@ -83,6 +81,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
+        <OfflineBar />
         <header className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 bg-cloud/85 px-4 py-3 backdrop-blur md:static md:bg-transparent md:px-6 md:pt-6 md:backdrop-blur-none">
           <Link href={`/u/${s.profile.username}`} className="flex min-w-0 shrink items-center gap-3">
             <span className="ring-grad md:hidden"><span className="block rounded-full bg-cloud p-0.5"><Avatar src={s.profile.avatar_url} name={s.profile.username} size={36} /></span></span>
